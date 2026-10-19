@@ -21,6 +21,7 @@ export default function BattleSetup() {
   const [timeLimit, setTimeLimit] = useState(60);
   const [teamColors, setTeamColors] = useState(["ruby", "ocean", "sun"]);
   const [teamCharacters, setTeamCharacters] = useState(["engineer", "astronaut", "archeologist"]);
+  const [teamNames, setTeamNames] = useState(["Team 1", "Team 2", "Team 3"]);
   const [game, setGame] = useState(null);
 
   function updateTeamCount(count) {
@@ -30,6 +31,9 @@ export default function BattleSetup() {
     );
     setTeamCharacters((characters) =>
       Array.from({ length: count }, (_, index) => characters[index] || CHARACTER_KEYS[index]),
+    );
+    setTeamNames((names) =>
+      Array.from({ length: count }, (_, index) => names[index] || `Team ${index + 1}`),
     );
   }
 
@@ -41,12 +45,18 @@ export default function BattleSetup() {
     );
   }
 
+  function updateTeamName(index, name) {
+    setTeamNames((names) =>
+      names.map((currentName, nameIndex) => (nameIndex === index ? name : currentName)),
+    );
+  }
+
   function createBattle() {
     setGame({
       phase: "dashboard",
       teams: teamCharacters.slice(0, teamCount).map((characterKey, index) => ({
         id: `team-${index + 1}`,
-        name: `${CHARACTER_CONFIG[characterKey].name} Team`,
+        name: teamNames[index].trim() || `Team ${index + 1}`,
         characterKey,
         color: teamColors[index],
         hearts: 5,
@@ -65,7 +75,7 @@ export default function BattleSetup() {
   if (game) return <BattleGame game={game} onUpdate={setGame} />;
 
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 px-5 py-8 text-white sm:px-8">
+    <main className="manga-shell min-h-screen bg-slate-950 px-5 py-8 pb-24 text-white sm:px-8 lg:pb-36">
       <div className="mx-auto max-w-4xl">
         <Link className="text-sm font-semibold text-slate-500 hover:text-amber-300" href="/game">
           ← Back to modes
@@ -158,14 +168,25 @@ export default function BattleSetup() {
                           <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
                             Team {teamIndex + 1}
                           </p>
-                          <p className="mt-1 font-black">
-                            {selectedConfig.name} Team · {selectedConfig.profession}
-                          </p>
+                          <p className="mt-1 font-black">{selectedConfig.name} · {selectedConfig.profession}</p>
                         </div>
                         <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">
                           Selected
                         </span>
                       </div>
+                      <label className="mb-4 block">
+                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                          Team name
+                        </span>
+                        <input
+                          className="w-full rounded-xl border border-slate-600 bg-slate-950 px-4 py-3 font-bold text-white outline-none transition placeholder:text-slate-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                          maxLength={10}
+                          onChange={(event) => updateTeamName(teamIndex, event.target.value)}
+                          placeholder={`Enter Team ${teamIndex + 1} name`}
+                          type="text"
+                          value={teamNames[teamIndex]}
+                        />
+                      </label>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                         {CHARACTER_KEYS.map((characterKey) => {
                           const character = CHARACTER_CONFIG[characterKey];
@@ -256,36 +277,33 @@ function Hearts({ count }) {
   );
 }
 
-function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, turnOrder, lastTransition }) {
+function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, turnOrder, lastTransition, questionCompact = false }) {
   const orderedTeams = turnOrder.length
     ? turnOrder.map((teamId) => teams.find((team) => team.id === teamId)).filter(Boolean)
     : teams;
 
   return (
-    <div className="border-b border-slate-800 bg-slate-900 p-3">
+    <div className={`border-b border-slate-800 bg-slate-900 ${questionCompact ? "p-1.5" : "p-3"}`}>
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-wrap items-center gap-3">
-        <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3">
+        <div className={`flex flex-wrap items-center ${questionCompact ? "gap-1.5" : "gap-3"}`}>
+        <div className={`rounded-xl border border-amber-400/30 bg-amber-400/10 ${questionCompact ? "px-2 py-1.5" : "px-4 py-3"}`}>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400">Progress</p>
-          <p className="mt-1 text-lg font-black text-white">
+          <p className={`${questionCompact ? "text-sm" : "text-lg"} mt-1 font-black text-white`}>
             {questionNumber} <span className="text-sm font-bold text-slate-400">of {questionCount}</span>
           </p>
-          <p className="text-xs text-slate-500">{Math.max(questionCount - questionNumber, 0)} left</p>
+          <p className={`${questionCompact ? "text-[10px]" : "text-xs"} text-slate-500`}>{Math.max(questionCount - questionNumber, 0)} left</p>
         </div>
-          <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {orderedTeams.map((team, index) => (
+          <div className={`grid min-w-0 flex-1 ${questionCompact ? "gap-1" : "gap-2"} sm:grid-cols-3 lg:grid-cols-5`}>
+          {orderedTeams.map((team) => (
             <div className="relative min-w-0" key={team.id}>
-              {turnOrder.length > 0 && (
-                <span className="absolute left-2 top-2 z-30 grid h-6 w-6 place-items-center rounded-full bg-slate-950/90 text-xs font-black text-amber-300">
-                  {index + 1}
-                </span>
-              )}
               <HybridScienceCard
                 characterKey={team.characterKey}
                 hearts={team.hearts}
                 isActiveTurn={team.id === highlightedTeamId}
                 isEliminated={team.hearts === 0}
                 points={team.points}
+                compact
+                extraCompact={questionCompact}
                 teamName={team.name}
               />
             </div>
@@ -293,7 +311,7 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
         </div>
       </div>
         {turnOrder.length > 0 && (
-          <p className="mt-3 border-t border-slate-800 pt-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+          <p className={`${questionCompact ? "mt-1.5 pt-1.5 text-[9px]" : "mt-3 pt-3 text-xs"} border-t border-slate-800 font-bold uppercase tracking-[0.16em] text-slate-500`}>
             <span className="text-amber-300">Route:</span> {lastTransition}
           </p>
         )}
@@ -543,7 +561,7 @@ function BattleGame({ game, onUpdate }) {
 
     if (game.phase === "decision") {
       return (
-        <main className="manga-shell min-h-screen bg-slate-950 text-white">
+        <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
           <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
           <div className="mx-auto max-w-3xl px-6 py-10">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
@@ -553,9 +571,16 @@ function BattleGame({ game, onUpdate }) {
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Category</p>
               <h1 className="mt-4 text-4xl font-black text-amber-300">Science</h1>
               <p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-slate-300">
-                {startingTeam?.name}, choose another team to answer this question.
+                {startingTeam?.name}, choose who will answer this question.
               </p>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                <button
+                  className="rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300"
+                  onClick={() => chooseAnsweringTeam(game.startingTeamId)}
+                  type="button"
+                >
+                  {startingTeam?.name} will answer
+                </button>
                 {game.teams
                   .filter((team) => team.id !== game.startingTeamId && team.hearts > 0)
                   .map((team) => (
@@ -576,8 +601,8 @@ function BattleGame({ game, onUpdate }) {
     }
 
     return (
-      <main className="manga-shell min-h-screen bg-slate-950 text-white">
-        <TeamStrip highlightedTeamId={game.answeringTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
+      <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
+        <TeamStrip highlightedTeamId={game.answeringTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
         <div className="mx-auto max-w-4xl px-6 py-10">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
@@ -651,7 +676,7 @@ function BattleGame({ game, onUpdate }) {
   }
 
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 text-white">
+    <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
       <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">

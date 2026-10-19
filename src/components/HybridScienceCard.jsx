@@ -69,12 +69,14 @@ export default function HybridScienceCard({
   points,
   isActiveTurn,
   isEliminated,
+  compact = false,
+  extraCompact = false,
 }) {
   const config = CHARACTER_CONFIG[characterKey] || CHARACTER_CONFIG.engineer;
 
   return (
     <article
-      className={`relative aspect-[2/3] w-full max-w-[310px] overflow-hidden rounded-3xl border-4 bg-slate-950 shadow-2xl transition-all duration-300 ${config.borderClass} ${config.glow} ${isActiveTurn ? "scale-105 animate-pulse ring-4 ring-amber-400" : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
+      className={`relative aspect-[2/3] w-full ${extraCompact ? "max-w-[100px]" : compact ? "max-w-[180px]" : "max-w-[310px]"} overflow-hidden rounded-3xl border-4 bg-slate-950 shadow-2xl transition-all duration-300 ${config.borderClass} ${config.glow} ${isActiveTurn ? "scale-105 animate-pulse ring-4 ring-amber-400" : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
     >
       <Image
         alt={`${config.name}, ${config.profession}`}
@@ -85,26 +87,17 @@ export default function HybridScienceCard({
         src={config.image}
       />
 
-      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-slate-950/90 to-transparent p-3">
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center bg-gradient-to-b from-slate-950/90 to-transparent p-3">
         <div className="flex gap-0.5" aria-label={`${hearts} of 5 hearts remaining`}>
           {Array.from({ length: 5 }, (_, index) => (
             <Heart active={index < Math.max(0, Math.min(5, hearts))} key={index} />
           ))}
         </div>
-        <span className="rounded-full bg-slate-950/75 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-white">
-          {config.theme}
-        </span>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 bg-gradient-to-t from-slate-950 via-slate-950/85 to-transparent p-4 pt-14">
-        <div className={`w-fit rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${config.badgeBg}`}>
-          {teamName} · {config.profession}
-        </div>
-        <div className="flex items-end justify-between gap-2">
-          <h2 className="text-2xl font-black tracking-tight text-white">{config.name}</h2>
-          <p className="text-right text-2xl font-black text-amber-400">{points}</p>
-        </div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">points</p>
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col bg-gradient-to-t from-slate-950 via-slate-950/85 to-transparent p-4 pt-14">
+        <p className={`${extraCompact ? "text-sm" : compact ? "text-lg" : "text-2xl"} self-end font-black text-amber-400`}>{points}</p>
+        <h2 className={`w-full truncate text-center ${extraCompact ? "text-[10px]" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-white`}>{teamName}</h2>
       </div>
 
       {isEliminated && (

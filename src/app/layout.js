@@ -32,16 +32,16 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || ""}`}
         />
-        <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr_300px]">
-          <aside className="hidden justify-center px-4 pt-8 lg:flex">
-            <div className="sticky top-8 h-[600px]">
-              <AdContainer format="half-page" slotId="five-hearts-left-half-page" />
+        <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[190px_1fr_190px]">
+          <aside className="hidden justify-center px-2 pt-8 lg:flex">
+            <div className="sticky top-8 h-[300px]">
+              <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-left-sidebar" />
             </div>
           </aside>
           <div className="min-w-0 pb-28">{children}</div>
-          <aside className="hidden justify-center px-4 pt-8 lg:flex">
-            <div className="sticky top-8 h-[600px]">
-              <AdContainer format="half-page" slotId="five-hearts-right-half-page" />
+          <aside className="hidden justify-center px-2 pt-8 lg:flex">
+            <div className="sticky top-8 h-[300px]">
+              <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-right-sidebar" />
             </div>
           </aside>
         </div>
