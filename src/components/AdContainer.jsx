@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 
 const AD_DIMENSIONS = {
   "half-page": { width: 300, height: 600 },
+  sidebar: { width: 180, height: 300 },
   rectangle: { width: 300, height: 250 },
   anchor: { width: 728, height: 90 },
   mobile: { width: 320, height: 50 },
