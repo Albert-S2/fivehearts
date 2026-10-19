@@ -283,17 +283,17 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
     : teams;
 
   return (
-    <div className={`border-b border-slate-800 bg-slate-900 ${questionCompact ? "p-1.5" : "p-3"}`}>
+    <div className="border-b border-slate-800 bg-slate-900 p-3">
       <div className="mx-auto max-w-7xl">
-        <div className={`flex flex-wrap items-center ${questionCompact ? "gap-1.5" : "gap-3"}`}>
-        <div className={`rounded-xl border border-amber-400/30 bg-amber-400/10 ${questionCompact ? "px-2 py-1.5" : "px-4 py-3"}`}>
+        <div className="flex flex-wrap items-center gap-3">
+        <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400">Progress</p>
-          <p className={`${questionCompact ? "text-sm" : "text-lg"} mt-1 font-black text-white`}>
+          <p className="mt-1 text-lg font-black text-white">
             {questionNumber} <span className="text-sm font-bold text-slate-400">of {questionCount}</span>
           </p>
-          <p className={`${questionCompact ? "text-[10px]" : "text-xs"} text-slate-500`}>{Math.max(questionCount - questionNumber, 0)} left</p>
+          <p className="text-xs text-slate-500">{Math.max(questionCount - questionNumber, 0)} left</p>
         </div>
-          <div className={`grid min-w-0 flex-1 ${questionCompact ? "gap-1" : "gap-2"} sm:grid-cols-3 lg:grid-cols-5`}>
+          <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           {orderedTeams.map((team) => (
             <div className="relative min-w-0" key={team.id}>
               <HybridScienceCard
@@ -562,7 +562,7 @@ function BattleGame({ game, onUpdate }) {
     if (game.phase === "decision") {
       return (
         <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
-          <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
+          <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
           <div className="mx-auto max-w-3xl px-6 py-10">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
               Question {game.questionNumber}
@@ -603,7 +603,7 @@ function BattleGame({ game, onUpdate }) {
     return (
       <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
         <TeamStrip highlightedTeamId={game.answeringTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
-        <div className="mx-auto max-w-4xl px-6 py-10">
+      <div className="mx-auto max-w-4xl px-6 py-10">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
               Question {game.questionNumber} · Science

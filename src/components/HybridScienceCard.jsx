@@ -76,7 +76,7 @@ export default function HybridScienceCard({
 
   return (
     <article
-      className={`relative aspect-[2/3] w-full ${extraCompact ? "max-w-[100px]" : compact ? "max-w-[180px]" : "max-w-[310px]"} overflow-hidden rounded-3xl border-4 bg-slate-950 shadow-2xl transition-all duration-300 ${config.borderClass} ${config.glow} ${isActiveTurn ? "scale-105 animate-pulse ring-4 ring-amber-400" : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
+      className={`relative aspect-[2/3] w-full ${extraCompact ? "max-w-[135px]" : compact ? "max-w-[180px]" : "max-w-[310px]"} overflow-hidden rounded-3xl border-4 bg-slate-950 shadow-2xl transition-all duration-300 ${config.borderClass} ${config.glow} ${isActiveTurn ? "scale-105 animate-pulse ring-4 ring-amber-400" : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
     >
       <Image
         alt={`${config.name}, ${config.profession}`}
@@ -96,8 +96,8 @@ export default function HybridScienceCard({
       </div>
 
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col bg-gradient-to-t from-slate-950 via-slate-950/85 to-transparent p-4 pt-14">
-        <p className={`${extraCompact ? "text-sm" : compact ? "text-lg" : "text-2xl"} self-end font-black text-amber-400`}>{points}</p>
-        <h2 className={`w-full truncate text-center ${extraCompact ? "text-[10px]" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-white`}>{teamName}</h2>
+        <p className={`${extraCompact ? "text-base" : compact ? "text-lg" : "text-2xl"} self-end font-black text-amber-400`}>{points}</p>
+        <h2 className={`w-full truncate text-center ${extraCompact ? "text-xs" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-white`}>{teamName}</h2>
       </div>
 
       {isEliminated && (
