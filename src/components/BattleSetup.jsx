@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import HybridScienceCard, { CHARACTER_CONFIG } from "./HybridScienceCard";
 
 const COLORS = [
   { name: "Ruby", value: "ruby", className: "bg-rose-500" },
@@ -12,12 +13,14 @@ const COLORS = [
 ];
 
 const QUESTION_COUNTS = [20, 40, 60];
+const CHARACTER_KEYS = ["engineer", "astronaut", "archeologist", "chemist", "biologist"];
 
 export default function BattleSetup() {
   const [teamCount, setTeamCount] = useState(3);
   const [questionCount, setQuestionCount] = useState(20);
   const [timeLimit, setTimeLimit] = useState(60);
   const [teamColors, setTeamColors] = useState(["ruby", "ocean", "sun"]);
+  const [teamCharacters, setTeamCharacters] = useState(["engineer", "astronaut", "archeologist"]);
   const [game, setGame] = useState(null);
 
   function updateTeamCount(count) {
@@ -25,21 +28,27 @@ export default function BattleSetup() {
     setTeamColors((colors) =>
       Array.from({ length: count }, (_, index) => colors[index] || COLORS[index].value),
     );
+    setTeamCharacters((characters) =>
+      Array.from({ length: count }, (_, index) => characters[index] || CHARACTER_KEYS[index]),
+    );
   }
 
-  function updateTeamColor(index, color) {
-    setTeamColors((colors) =>
-      colors.map((currentColor, colorIndex) => (colorIndex === index ? color : currentColor)),
+  function updateTeamCharacter(index, characterKey) {
+    setTeamCharacters((characters) =>
+      characters.map((currentCharacter, characterIndex) =>
+        characterIndex === index ? characterKey : currentCharacter,
+      ),
     );
   }
 
   function createBattle() {
     setGame({
       phase: "dashboard",
-      teams: teamColors.slice(0, teamCount).map((color, index) => ({
+      teams: teamCharacters.slice(0, teamCount).map((characterKey, index) => ({
         id: `team-${index + 1}`,
-        name: `${COLORS.find((item) => item.value === color).name} Team`,
-        color,
+        name: `${CHARACTER_CONFIG[characterKey].name} Team`,
+        characterKey,
+        color: teamColors[index],
         hearts: 5,
         points: 0,
       })),
@@ -66,7 +75,7 @@ export default function BattleSetup() {
           <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · Battle</p>
           <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Set up your battle</h1>
           <p className="mt-4 max-w-2xl leading-7 text-slate-400">
-            Choose the match rules and give each team a unique color. Team names will follow their colors.
+            Choose the match rules and give each team a character. The selected character and name will stay with that team throughout the game.
           </p>
         </header>
 
@@ -134,34 +143,70 @@ export default function BattleSetup() {
             </section>
 
             <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-              <h2 className="text-lg font-black">Team colors and names</h2>
-              <p className="mt-1 text-sm text-slate-500">Each color can only be used once.</p>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {Array.from({ length: teamCount }, (_, index) => {
-                  const selectedColor = COLORS.find((color) => color.value === teamColors[index]);
+              <h2 className="text-lg font-black">Choose team characters</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Each team picks one unique character. Their picture, name, hearts, and score appear on the dashboard.
+              </p>
+              <div className="mt-6 space-y-8">
+                {Array.from({ length: teamCount }, (_, teamIndex) => {
+                  const selectedCharacter = teamCharacters[teamIndex];
+                  const selectedConfig = CHARACTER_CONFIG[selectedCharacter];
                   return (
-                    <label className="flex items-center gap-3 rounded-xl bg-slate-800 p-3" key={index}>
-                      <span className={`h-9 w-9 shrink-0 rounded-full ${selectedColor.className}`} />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Team {index + 1}</span>
-                        <span className="block font-bold">{selectedColor.name} Team</span>
-                      </span>
-                      <select
-                        className="rounded-lg border border-slate-600 bg-slate-900 px-2 py-2 text-sm text-white"
-                        onChange={(event) => updateTeamColor(index, event.target.value)}
-                        value={teamColors[index]}
-                      >
-                        {COLORS.map((color) => (
-                          <option
-                            disabled={teamColors.includes(color.value) && teamColors[index] !== color.value}
-                            key={color.value}
-                            value={color.value}
-                          >
-                            {color.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <div className="border-t border-slate-800 pt-6 first:border-t-0 first:pt-0" key={teamIndex}>
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
+                            Team {teamIndex + 1}
+                          </p>
+                          <p className="mt-1 font-black">
+                            {selectedConfig.name} Team · {selectedConfig.profession}
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">
+                          Selected
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                        {CHARACTER_KEYS.map((characterKey) => {
+                          const character = CHARACTER_CONFIG[characterKey];
+                          const isSelected = selectedCharacter === characterKey;
+                          const isTakenByOtherTeam = teamCharacters.some(
+                            (currentCharacter, currentIndex) =>
+                              currentIndex !== teamIndex && currentCharacter === characterKey,
+                          );
+                          return (
+                            <button
+                              aria-label={`Select ${character.name} for Team ${teamIndex + 1}`}
+                              className={`relative min-w-0 rounded-2xl text-left transition ${
+                                isSelected
+                                  ? "z-10 ring-4 ring-amber-400"
+                                  : isTakenByOtherTeam
+                                    ? "cursor-not-allowed opacity-30"
+                                    : "hover:scale-[1.02] hover:ring-2 hover:ring-amber-300"
+                              }`}
+                              disabled={isTakenByOtherTeam}
+                              key={characterKey}
+                              onClick={() => updateTeamCharacter(teamIndex, characterKey)}
+                              type="button"
+                            >
+                              <HybridScienceCard
+                                characterKey={characterKey}
+                                hearts={5}
+                                isActiveTurn={false}
+                                isEliminated={false}
+                                points={0}
+                                teamName={`Team ${teamIndex + 1}`}
+                              />
+                              {isSelected && (
+                                <span className="absolute left-2 top-2 z-20 rounded-full bg-amber-400 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-950">
+                                  Picked
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -229,20 +274,20 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
         </div>
           <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           {orderedTeams.map((team, index) => (
-            <div className={`rounded-xl border p-3 ${team.id === highlightedTeamId ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-950/20" : "border-slate-800 bg-slate-950"}`} key={team.id}>
-              <div className="flex items-center gap-2">
-                {turnOrder.length > 0 && (
-                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-700 text-[10px] font-black text-slate-200">
-                    {index + 1}
-                  </span>
-                )}
-                <span className={`h-3 w-3 rounded-full ${COLORS.find((color) => color.value === team.color).className}`} />
-                <span className="truncate text-sm font-bold">{team.name}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <Hearts count={team.hearts} />
-                <span className="text-sm font-black text-amber-300">{team.points} pts</span>
-              </div>
+            <div className="relative min-w-0" key={team.id}>
+              {turnOrder.length > 0 && (
+                <span className="absolute left-2 top-2 z-30 grid h-6 w-6 place-items-center rounded-full bg-slate-950/90 text-xs font-black text-amber-300">
+                  {index + 1}
+                </span>
+              )}
+              <HybridScienceCard
+                characterKey={team.characterKey}
+                hearts={team.hearts}
+                isActiveTurn={team.id === highlightedTeamId}
+                isEliminated={team.hearts === 0}
+                points={team.points}
+                teamName={team.name}
+              />
             </div>
           ))}
         </div>
