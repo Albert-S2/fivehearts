@@ -47,9 +47,9 @@ export default function BattleSetup() {
       timeLimit,
       startingTeamId: null,
       answeringTeamId: null,
+      turnOrder: [],
       questionNumber: 1,
-      previousChooserId: null,
-      blockedTeamId: null,
+      lastTransition: "Roll the dice to create the team order.",
     });
   }
 
@@ -211,10 +211,15 @@ function Hearts({ count }) {
   );
 }
 
-function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount }) {
+function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, turnOrder, lastTransition }) {
+  const orderedTeams = turnOrder.length
+    ? turnOrder.map((teamId) => teams.find((team) => team.id === teamId)).filter(Boolean)
+    : teams;
+
   return (
     <div className="border-b border-slate-800 bg-slate-900 p-3">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-wrap items-center gap-3">
         <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400">Progress</p>
           <p className="mt-1 text-lg font-black text-white">
@@ -222,10 +227,15 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount }) 
           </p>
           <p className="text-xs text-slate-500">{Math.max(questionCount - questionNumber, 0)} left</p>
         </div>
-        <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {teams.map((team) => (
+          <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          {orderedTeams.map((team, index) => (
             <div className={`rounded-xl border p-3 ${team.id === highlightedTeamId ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-950/20" : "border-slate-800 bg-slate-950"}`} key={team.id}>
               <div className="flex items-center gap-2">
+                {turnOrder.length > 0 && (
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-700 text-[10px] font-black text-slate-200">
+                    {index + 1}
+                  </span>
+                )}
                 <span className={`h-3 w-3 rounded-full ${COLORS.find((color) => color.value === team.color).className}`} />
                 <span className="truncate text-sm font-bold">{team.name}</span>
               </div>
@@ -236,6 +246,12 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount }) 
             </div>
           ))}
         </div>
+      </div>
+        {turnOrder.length > 0 && (
+          <p className="mt-3 border-t border-slate-800 pt-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+            <span className="text-amber-300">Route:</span> {lastTransition}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -395,8 +411,7 @@ function BattleGame({ game, onUpdate }) {
       startingTeamId: game.answeringTeamId,
       answeringTeamId: null,
       questionNumber: game.questionNumber + 1,
-      previousChooserId: game.startingTeamId,
-      blockedTeamId: null,
+      lastTransition: `${answeringTeam.name} answered correctly and controls the next choice.`,
     });
     setChanceCard(null);
     setAttackTargetId("");
@@ -411,7 +426,7 @@ function BattleGame({ game, onUpdate }) {
     setSelectedAnswer(null);
     setAnswerResult(null);
     setVisibleAnswers(INITIAL_ANSWERS);
-    onUpdate({ ...game, phase: "question", answeringTeamId: teamId, blockedTeamId: null });
+    onUpdate({ ...game, phase: "question", answeringTeamId: teamId });
   }
 
   function usePendingChanceCard() {
@@ -422,13 +437,30 @@ function BattleGame({ game, onUpdate }) {
   }
 
   function moveToNextQuestion() {
+    const currentOrderIndex = game.turnOrder.indexOf(game.answeringTeamId);
+    const orderedCandidates = game.turnOrder.length
+      ? game.turnOrder.map((teamId, index) => ({
+        teamId,
+        index,
+      }))
+      : [];
+    const nextCandidate = orderedCandidates
+      .map((candidate, offset) => ({
+        ...candidate,
+        offset: (candidate.index - currentOrderIndex + game.turnOrder.length) % game.turnOrder.length || game.turnOrder.length,
+        order: offset,
+      }))
+      .sort((first, second) => first.offset - second.offset)
+      .find((candidate) => game.teams.find((team) => team.id === candidate.teamId)?.hearts > 0);
+    const nextTeamId = nextCandidate?.teamId || game.teams.find((team) => team.hearts > 0)?.id;
+
     onUpdate({
       ...game,
       phase: "decision",
-      startingTeamId: game.previousChooserId || game.startingTeamId,
+      startingTeamId: nextTeamId,
       answeringTeamId: null,
       questionNumber: game.questionNumber + 1,
-      blockedTeamId: game.answeringTeamId,
+      lastTransition: `${game.teams.find((team) => team.id === game.answeringTeamId)?.name} was incorrect. Original order advances to ${game.teams.find((team) => team.id === nextTeamId)?.name}.`,
     });
     setSelectedAnswer(null);
     setAnswerResult(null);
@@ -444,9 +476,17 @@ function BattleGame({ game, onUpdate }) {
       rolls += 1;
       if (rolls === 10) {
         window.clearInterval(interval);
-        const team = game.teams[Math.floor(Math.random() * game.teams.length)];
-        setDiceFace(game.teams.indexOf(team) + 1);
-        onUpdate({ ...game, startingTeamId: team.id });
+        const order = [...game.teams]
+          .sort(() => Math.random() - 0.5)
+          .map((team) => team.id);
+        const team = game.teams.find((item) => item.id === order[0]);
+        setDiceFace(1);
+        onUpdate({
+          ...game,
+          startingTeamId: team.id,
+          turnOrder: order,
+          lastTransition: `Dice order set: ${order.map((teamId) => game.teams.find((item) => item.id === teamId)?.name).join(" → ")}.`,
+        });
         setIsRolling(false);
       }
     }, 90);
@@ -459,7 +499,7 @@ function BattleGame({ game, onUpdate }) {
     if (game.phase === "decision") {
       return (
         <main className="manga-shell min-h-screen bg-slate-950 text-white">
-          <TeamStrip highlightedTeamId={game.startingTeamId} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} />
+          <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
           <div className="mx-auto max-w-3xl px-6 py-10">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
               Question {game.questionNumber}
@@ -468,18 +508,11 @@ function BattleGame({ game, onUpdate }) {
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Category</p>
               <h1 className="mt-4 text-4xl font-black text-amber-300">Science</h1>
               <p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-slate-300">
-                {startingTeam?.name}, choose who will answer this question.
+                {startingTeam?.name}, choose another team to answer this question.
               </p>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                <button
-                  className="rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300"
-                  onClick={() => chooseAnsweringTeam(game.startingTeamId)}
-                  type="button"
-                >
-                  {startingTeam?.name} will answer
-                </button>
                 {game.teams
-                  .filter((team) => team.id !== game.startingTeamId && team.id !== game.blockedTeamId)
+                  .filter((team) => team.id !== game.startingTeamId && team.hearts > 0)
                   .map((team) => (
                     <button
                       className="rounded-xl border border-slate-600 bg-slate-800 px-5 py-4 font-bold text-white hover:border-amber-400 hover:text-amber-300"
@@ -499,7 +532,7 @@ function BattleGame({ game, onUpdate }) {
 
     return (
       <main className="manga-shell min-h-screen bg-slate-950 text-white">
-        <TeamStrip highlightedTeamId={game.answeringTeamId} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} />
+        <TeamStrip highlightedTeamId={game.answeringTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
         <div className="mx-auto max-w-4xl px-6 py-10">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
@@ -574,7 +607,7 @@ function BattleGame({ game, onUpdate }) {
 
   return (
     <main className="manga-shell min-h-screen bg-slate-950 text-white">
-      <TeamStrip highlightedTeamId={game.startingTeamId} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} />
+      <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -594,7 +627,7 @@ function BattleGame({ game, onUpdate }) {
                 {diceFace}
               </div>
               <p className="mt-5 text-xl font-black">
-                {game.startingTeamId ? `${game.teams.find((team) => team.id === game.startingTeamId).name} starts` : "Roll to choose who starts"}
+                {game.startingTeamId ? `${game.teams.find((team) => team.id === game.startingTeamId).name} starts` : "Roll to create team order"}
               </p>
               <button className="mt-5 rounded-xl bg-amber-400 px-6 py-3 font-black text-slate-950 hover:bg-amber-300 disabled:opacity-50" disabled={isRolling} onClick={rollDice} type="button">
                 {isRolling ? "Rolling..." : game.startingTeamId ? "Roll again" : "Roll dice"}
@@ -611,7 +644,7 @@ function BattleGame({ game, onUpdate }) {
           </aside>
         </section>
 
-        <button className="mt-8 w-full rounded-2xl bg-amber-400 px-6 py-4 text-lg font-black text-slate-950 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40" disabled={!game.startingTeamId || isRolling} onClick={() => onUpdate({ ...game, phase: "decision" })} type="button">
+        <button className="mt-8 w-full rounded-2xl bg-amber-400 px-6 py-4 text-lg font-black text-slate-950 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40" disabled={!game.startingTeamId || isRolling} onClick={() => onUpdate({ ...game, phase: "decision", lastTransition: `${game.teams.find((team) => team.id === game.startingTeamId)?.name} is first in the order and chooses who answers.` })} type="button">
           Start game
         </button>
       </div>

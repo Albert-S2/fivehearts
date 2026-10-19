@@ -1,16 +1,5 @@
 import Link from "next/link";
-
-function AdSlot({ label = "Advertisement" }) {
-  return (
-    <div
-      aria-label={label}
-      className="flex min-h-24 items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 px-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
-      role="complementary"
-    >
-      {label} space
-    </div>
-  );
-}
+import AdContainer from "../components/AdContainer";
 
 export default function Home() {
   return (
@@ -27,7 +16,12 @@ export default function Home() {
         </header>
 
         <div className="mt-6">
-          <AdSlot label="Top banner" />
+          <AdContainer
+            className="mx-auto h-[90px] w-full max-w-[728px]"
+            format="anchor"
+            slotId="five-hearts-home-top"
+            style={{ height: 90, minHeight: 90, width: "100%" }}
+          />
         </div>
 
         <section className="flex flex-1 flex-col items-center justify-center py-12 text-center">
@@ -61,7 +55,12 @@ export default function Home() {
         </section>
 
         <div className="pb-6">
-          <AdSlot label="Bottom banner" />
+          <AdContainer
+            className="mx-auto h-[90px] w-full max-w-[728px]"
+            format="anchor"
+            slotId="five-hearts-home-bottom"
+            style={{ height: 90, minHeight: 90, width: "100%" }}
+          />
         </div>
 
         <footer className="border-t border-slate-800 pt-5 text-center text-xs text-slate-600">
