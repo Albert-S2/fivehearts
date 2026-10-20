@@ -12,8 +12,52 @@ const COLORS = [
   { name: "Violet", value: "violet", className: "bg-violet-500" },
 ];
 
-const QUESTION_COUNTS = [20, 40, 60];
+const QUESTION_COUNTS = [5, 20, 40, 60];
 const CHARACTER_KEYS = ["engineer", "astronaut", "archeologist", "chemist", "biologist"];
+const PRACTICE_QUESTIONS = [
+  {
+    category: "Science",
+    text: "Which planet is closest to the Sun?",
+    answers: ["Venus", "Mercury", "Mars", "Earth"],
+    correctAnswer: "Mercury",
+  },
+  {
+    category: "Geography",
+    text: "What is the largest ocean on Earth?",
+    answers: ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Arctic Ocean"],
+    correctAnswer: "Pacific Ocean",
+  },
+  {
+    category: "History",
+    text: "Which ancient civilization built Machu Picchu?",
+    answers: ["Roman", "Inca", "Viking", "Egyptian"],
+    correctAnswer: "Inca",
+  },
+  {
+    category: "Nature",
+    text: "What process do plants use to turn sunlight into energy?",
+    answers: ["Digestion", "Respiration", "Photosynthesis", "Fermentation"],
+    correctAnswer: "Photosynthesis",
+  },
+  {
+    category: "Space",
+    text: "Which star is at the center of our solar system?",
+    answers: ["Sirius", "Polaris", "The Sun", "Betelgeuse"],
+    correctAnswer: "The Sun",
+  },
+];
+
+function shuffleItems(items) {
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function createPracticeQuestions(count) {
+  const questions = [];
+  while (questions.length < count) {
+    questions.push(...shuffleItems(PRACTICE_QUESTIONS));
+  }
+  return questions.slice(0, count);
+}
 
 export default function BattleSetup() {
   const [teamCount, setTeamCount] = useState(3);
@@ -61,8 +105,10 @@ export default function BattleSetup() {
         color: teamColors[index],
         hearts: 5,
         points: 0,
+        questionsAsked: 0,
       })),
       questionCount,
+      questions: createPracticeQuestions(questionCount),
       timeLimit,
       startingTeamId: null,
       answeringTeamId: null,
@@ -320,80 +366,76 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
   );
 }
 
-const CHANCE_CARD_DETAILS = {
-  EXTRA_HEART: {
-    title: "Extra heart",
-    description: "Restore one heart, up to a maximum of five.",
-  },
-  REMOVE_ENEMY_HEART: {
-    title: "Attack",
-    description: "Choose an enemy team to lose one heart.",
-  },
-  CHOOSE_CATEGORY: {
-    title: "Pick your category",
-    description: "Your team earns the right to choose the next category.",
-  },
-  REMOVE_FAKE_ANSWER: {
-    title: "50/50",
-    description: "Your team can remove one wrong answer on the next question.",
-  },
-  CHEERING: {
-    title: "Cheering card",
-    description: "Good luck next time!",
-  },
-};
-
-function ChanceCardPanel({ attackTargetId, card, onApply, onTarget, teams }) {
-  const details = CHANCE_CARD_DETAILS[card];
+function VictoryScreen({ teams }) {
+  const winner = [...teams].sort((first, second) => second.points - first.points)[0];
+  const pointsLeader = winner;
+  const heartsLeader = [...teams].sort((first, second) => second.hearts - first.hearts)[0];
+  const questionsLeader = [...teams].sort((first, second) => second.questionsAsked - first.questionsAsked)[0];
 
   return (
-    <div className="fixed inset-0 z-20 grid place-items-center bg-slate-950/85 p-6 backdrop-blur-sm">
-      <section className="w-full max-w-md rounded-3xl border border-amber-400/50 bg-slate-900 p-7 text-center shadow-2xl shadow-amber-950/40">
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400">Chance card received</p>
-        <div className="mx-auto mt-5 grid h-20 w-20 place-items-center rounded-2xl bg-amber-400 text-4xl font-black text-slate-950">5</div>
-        <h2 className="mt-5 text-3xl font-black text-amber-300">{details.title}</h2>
-        <p className="mt-2 text-slate-300">{details.description}</p>
-        {card === "REMOVE_ENEMY_HEART" && (
-          <select
-            className="mt-5 w-full rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-white"
-            onChange={(event) => onTarget(event.target.value)}
-            value={attackTargetId}
+    <main className="manga-shell min-h-screen bg-slate-950 px-6 py-10 pb-32 text-white lg:pb-40">
+      <div className="mx-auto max-w-6xl">
+        <div className="text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · Battle complete</p>
+          <h1 className="mt-4 text-5xl font-black tracking-tight text-amber-300 sm:text-7xl">Victory!</h1>
+          <p className="mt-4 text-lg text-slate-300">The final question has been answered.</p>
+        </div>
+
+        <section className="mx-auto mt-10 max-w-sm text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Champion</p>
+          <div className="mt-4 flex justify-center">
+            <HybridScienceCard
+              characterKey={winner.characterKey}
+              hearts={winner.hearts}
+              isActiveTurn
+              isEliminated={winner.hearts === 0}
+              points={winner.points}
+              teamName={winner.name}
+            />
+          </div>
+        </section>
+
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <VictoryStat label="Most points" team={pointsLeader} value={pointsLeader.points} />
+          <VictoryStat label="Most hearts left" team={heartsLeader} value={heartsLeader.hearts} />
+          <VictoryStat label="Most questions asked" team={questionsLeader} value={questionsLeader.questionsAsked} />
+        </div>
+
+        <div className="relative z-10 mt-10 pb-24 text-center">
+          <Link
+            className="inline-flex rounded-xl bg-amber-400 px-6 py-4 text-base font-black text-slate-950 shadow-lg shadow-amber-950/40 hover:bg-amber-300"
+            href="/"
           >
-            <option value="">Choose an enemy team</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
-          </select>
-        )}
-        <button
-          className="mt-5 rounded-xl bg-amber-400 px-6 py-3 font-black text-slate-950 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
-          disabled={card === "REMOVE_ENEMY_HEART" && !attackTargetId}
-          onClick={onApply}
-          type="button"
-        >
-          {card === "CHEERING" ? "Continue" : card === "REMOVE_FAKE_ANSWER" ? "Keep for next question" : "Use card"}
-        </button>
-      </section>
-    </div>
+            Back to main menu
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function VictoryStat({ label, team, value }) {
+  return (
+    <section className="rounded-2xl border border-slate-700 bg-slate-900 p-5 text-center">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">{label}</p>
+      <p className="mt-4 text-2xl font-black text-white">{team.name}</p>
+      <p className="mt-2 text-4xl font-black text-amber-300">{value}</p>
+    </section>
   );
 }
 
 function BattleGame({ game, onUpdate }) {
-  const INITIAL_ANSWERS = ["Venus", "Mercury", "Mars", "Earth"];
   const [isRolling, setIsRolling] = useState(false);
   const [diceFace, setDiceFace] = useState(1);
   const [secondsLeft, setSecondsLeft] = useState(game.timeLimit ?? 60);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [answerResult, setAnswerResult] = useState(null);
-  const [chanceCard, setChanceCard] = useState(null);
-  const [attackTargetId, setAttackTargetId] = useState("");
-  const [visibleAnswers, setVisibleAnswers] = useState(INITIAL_ANSWERS);
+  const activeQuestion = game.questions?.[game.questionNumber - 1] || PRACTICE_QUESTIONS[0];
+  const [visibleAnswers, setVisibleAnswers] = useState(activeQuestion.answers);
   const resolveAnswerRef = useRef(null);
 
   useEffect(() => {
-    if (game.phase !== "question" || answerResult || chanceCard || game.timeLimit === null) return undefined;
+    if (game.phase !== "question" || answerResult || game.timeLimit === null) return undefined;
 
     const timer = window.setInterval(() => {
       setSecondsLeft((seconds) => {
@@ -407,77 +449,31 @@ function BattleGame({ game, onUpdate }) {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [game.phase, game.timeLimit, answerResult, chanceCard]);
-
-  const drawChanceCard = useCallback(() => {
-    const roll = Math.random() * 100;
-    if (roll < 5) return "EXTRA_HEART";
-    if (roll < 7) return "REMOVE_ENEMY_HEART";
-    if (roll < 12) return "CHOOSE_CATEGORY";
-    if (roll < 17) return "REMOVE_FAKE_ANSWER";
-    return "CHEERING";
-  }, []);
+  }, [game.phase, game.timeLimit, answerResult]);
 
   const resolveAnswer = useCallback((isCorrect, timedOut = false) => {
-    if (answerResult || chanceCard) return;
+    if (answerResult) return;
 
     const answeringTeam = game.teams.find((team) => team.id === game.answeringTeamId);
     if (!answeringTeam) return;
 
     const updatedTeams = game.teams.map((team) => {
       if (team.id !== answeringTeam.id) return team;
-      if (isCorrect) return { ...team, points: team.points + 10 };
+      const questionsAsked = team.questionsAsked + 1;
+      if (isCorrect) return { ...team, points: team.points + 10, questionsAsked };
 
       const hearts = Math.max(team.hearts - 1, 0);
-      return { ...team, hearts };
+      return { ...team, hearts, questionsAsked };
     });
 
     setAnswerResult({ isCorrect, timedOut });
     onUpdate({ ...game, teams: updatedTeams });
-
-    if (isCorrect) {
-      setChanceCard(drawChanceCard());
-    }
-  }, [answerResult, chanceCard, drawChanceCard, game, onUpdate]);
+  }, [answerResult, game, onUpdate]);
 
   function chooseAnswer(answer, index) {
-    if (answerResult || chanceCard) return;
+    if (answerResult) return;
     setSelectedAnswer(index);
-    resolveAnswer(answer === "Mercury");
-  }
-
-  function applyChanceCard() {
-    if (!chanceCard) return;
-    const answeringTeam = game.teams.find((team) => team.id === game.answeringTeamId);
-    let updatedTeams = game.teams;
-
-    if (chanceCard === "EXTRA_HEART" && answeringTeam) {
-      updatedTeams = game.teams.map((team) =>
-        team.id === answeringTeam.id ? { ...team, hearts: Math.min(team.hearts + 1, 5) } : team,
-      );
-    }
-
-    if (chanceCard === "REMOVE_ENEMY_HEART" && attackTargetId) {
-      updatedTeams = game.teams.map((team) =>
-        team.id === attackTargetId ? { ...team, hearts: Math.max(team.hearts - 1, 0) } : team,
-      );
-    }
-
-    onUpdate({
-      ...game,
-      phase: "decision",
-      teams: updatedTeams,
-      lastChanceCard: chanceCard,
-      pendingChanceCard: chanceCard === "REMOVE_FAKE_ANSWER"
-        ? { type: chanceCard, teamId: game.answeringTeamId }
-        : null,
-      startingTeamId: game.answeringTeamId,
-      answeringTeamId: null,
-      questionNumber: game.questionNumber + 1,
-      lastTransition: `${answeringTeam.name} answered correctly and controls the next choice.`,
-    });
-    setChanceCard(null);
-    setAttackTargetId("");
+    resolveAnswer(answer === activeQuestion.correctAnswer);
   }
 
   useEffect(() => {
@@ -488,16 +484,11 @@ function BattleGame({ game, onUpdate }) {
     setSecondsLeft(game.timeLimit ?? 60);
     setSelectedAnswer(null);
     setAnswerResult(null);
-    setVisibleAnswers(INITIAL_ANSWERS);
+    const nextQuestion = game.questions[(game.questionNumber - 1) % game.questions.length];
+    setVisibleAnswers(nextQuestion.answers);
     onUpdate({ ...game, phase: "question", answeringTeamId: teamId });
   }
 
-  function usePendingChanceCard() {
-    if (!game.pendingChanceCard || game.pendingChanceCard.type !== "REMOVE_FAKE_ANSWER") return;
-    const wrongAnswerIndex = visibleAnswers.findIndex((answer) => answer !== "Mercury");
-    setVisibleAnswers(visibleAnswers.filter((_, index) => index !== wrongAnswerIndex));
-    onUpdate({ ...game, pendingChanceCard: null });
-  }
 
   function moveToNextQuestion() {
     const currentOrderIndex = game.turnOrder.indexOf(game.answeringTeamId);
@@ -519,7 +510,7 @@ function BattleGame({ game, onUpdate }) {
 
     onUpdate({
       ...game,
-      phase: "decision",
+      phase: game.questionNumber >= game.questionCount ? "victory" : "decision",
       startingTeamId: nextTeamId,
       answeringTeamId: null,
       questionNumber: game.questionNumber + 1,
@@ -555,6 +546,10 @@ function BattleGame({ game, onUpdate }) {
     }, 90);
   }
 
+  if (game.phase === "victory") {
+    return <VictoryScreen teams={game.teams} />;
+  }
+
   if (game.phase === "decision" || game.phase === "question") {
     const startingTeam = game.teams.find((team) => team.id === game.startingTeamId);
     const answeringTeam = game.teams.find((team) => team.id === game.answeringTeamId);
@@ -569,7 +564,7 @@ function BattleGame({ game, onUpdate }) {
             </p>
             <div className="mt-6 rounded-3xl border border-amber-400/30 bg-slate-900 p-7 text-center">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Category</p>
-              <h1 className="mt-4 text-4xl font-black text-amber-300">Science</h1>
+              <h1 className="mt-4 text-4xl font-black text-amber-300">{activeQuestion.category}</h1>
               <p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-slate-300">
                 {startingTeam?.name}, choose who will answer this question.
               </p>
@@ -606,7 +601,7 @@ function BattleGame({ game, onUpdate }) {
       <div className="mx-auto max-w-4xl px-6 py-10">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
-              Question {game.questionNumber} · Science
+              Question {game.questionNumber} · {activeQuestion.category}
             </p>
             {game.timeLimit !== null && (
               <span className={`rounded-full border px-4 py-2 text-xl font-black tabular-nums ${secondsLeft <= 10 ? "border-red-400 text-red-400" : "border-amber-400 text-amber-300"}`}>
@@ -614,7 +609,7 @@ function BattleGame({ game, onUpdate }) {
               </span>
             )}
           </div>
-          <h1 className="mt-4 text-3xl font-black sm:text-5xl">Which planet is closest to the Sun?</h1>
+          <h1 className="mt-4 text-3xl font-black sm:text-5xl">{activeQuestion.text}</h1>
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             {visibleAnswers.map((answer, index) => (
               <button
@@ -625,7 +620,7 @@ function BattleGame({ game, onUpdate }) {
                       : "border-red-400 bg-red-400/10"
                     : "border-slate-700 bg-slate-900 hover:border-amber-400"
                 }`}
-                disabled={Boolean(answerResult) || Boolean(chanceCard)}
+                disabled={Boolean(answerResult)}
                 key={answer}
                 onClick={() => chooseAnswer(answer, index)}
                 type="button"
@@ -635,16 +630,6 @@ function BattleGame({ game, onUpdate }) {
               </button>
             ))}
           </div>
-          {game.pendingChanceCard?.type === "REMOVE_FAKE_ANSWER" &&
-            game.pendingChanceCard.teamId === game.answeringTeamId && (
-              <div className="mt-6 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-5 text-center">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">Your chance card</p>
-                <p className="mt-2 font-black text-amber-300">50/50 · Remove one wrong answer</p>
-                <button className="mt-4 rounded-xl bg-amber-400 px-5 py-3 font-black text-slate-950 hover:bg-amber-300" onClick={usePendingChanceCard} type="button">
-                  Use 50/50
-                </button>
-              </div>
-            )}
           <p className="mt-8 text-center text-slate-400">
             {answerResult?.timedOut
               ? `${answeringTeam?.name} ran out of time. One heart is lost.`
@@ -652,23 +637,14 @@ function BattleGame({ game, onUpdate }) {
                 ? `${answeringTeam?.name} is correct and earns 10 points!`
                 : `${answeringTeam?.name} is incorrect. One heart is lost.`}
           </p>
-          {answerResult && !answerResult.isCorrect && (
+          {answerResult && (
             <button
               className="mt-6 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300"
               onClick={moveToNextQuestion}
               type="button"
             >
-              Next question
+              {game.questionNumber >= game.questionCount ? "See results" : "Next question"}
             </button>
-          )}
-          {chanceCard && (
-            <ChanceCardPanel
-              attackTargetId={attackTargetId}
-              card={chanceCard}
-              onApply={applyChanceCard}
-              onTarget={setAttackTargetId}
-              teams={game.teams.filter((team) => team.id !== answeringTeam?.id && team.hearts > 0)}
-            />
           )}
         </div>
       </main>
@@ -689,7 +665,7 @@ function BattleGame({ game, onUpdate }) {
           </div>
         </div>
 
-        <section className="mt-8 grid gap-5 lg:grid-cols-[1fr_280px]">
+        <section className="mx-auto mt-8 max-w-2xl">
           <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Starting team</p>
             <div className="mt-6 flex flex-col items-center text-center">
@@ -704,14 +680,6 @@ function BattleGame({ game, onUpdate }) {
               </button>
             </div>
           </div>
-          <aside className="rounded-3xl border border-dashed border-slate-700 bg-slate-900/50 p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Last chance card</p>
-            <div className="mt-5 grid min-h-36 place-items-center rounded-2xl border border-dashed border-slate-700 text-center text-sm text-slate-500">
-              {game.pendingChanceCard?.type === "REMOVE_FAKE_ANSWER"
-                ? `${game.teams.find((team) => team.id === game.pendingChanceCard.teamId)?.name} · 50/50 ready`
-                : "No card drawn yet"}
-            </div>
-          </aside>
         </section>
 
         <button className="mt-8 w-full rounded-2xl bg-amber-400 px-6 py-4 text-lg font-black text-slate-950 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40" disabled={!game.startingTeamId || isRolling} onClick={() => onUpdate({ ...game, phase: "decision", lastTransition: `${game.teams.find((team) => team.id === game.startingTeamId)?.name} is first in the order and chooses who answers.` })} type="button">
