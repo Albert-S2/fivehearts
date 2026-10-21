@@ -246,10 +246,10 @@ export default function BattleSetup() {
                               aria-label={`Select ${character.name} for Team ${teamIndex + 1}`}
                               className={`relative min-w-0 rounded-2xl text-left transition ${
                                 isSelected
-                                  ? "z-10 ring-4 ring-amber-400"
+                                  ? "z-10 scale-[1.02]"
                                   : isTakenByOtherTeam
                                     ? "cursor-not-allowed opacity-30"
-                                    : "hover:scale-[1.02] hover:ring-2 hover:ring-amber-300"
+                                    : `hover:scale-[1.02] hover:ring-2 ${character.hoverRing}`
                               }`}
                               disabled={isTakenByOtherTeam}
                               key={characterKey}
@@ -265,7 +265,7 @@ export default function BattleSetup() {
                                 teamName={`Team ${teamIndex + 1}`}
                               />
                               {isSelected && (
-                                <span className="absolute left-2 top-2 z-20 rounded-full bg-amber-400 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-950">
+                                <span className={`absolute left-2 top-2 z-20 rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider ${character.badgeBg}`}>
                                   Picked
                                 </span>
                               )}

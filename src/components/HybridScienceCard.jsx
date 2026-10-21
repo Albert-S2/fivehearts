@@ -11,6 +11,8 @@ export const CHARACTER_CONFIG = {
     borderClass: "border-slate-400",
     badgeBg: "bg-slate-800 text-slate-200",
     glow: "shadow-slate-400/20",
+    activeRing: "ring-slate-400",
+    hoverRing: "hover:ring-slate-300",
   },
   astronaut: {
     name: "STELLA",
@@ -20,6 +22,8 @@ export const CHARACTER_CONFIG = {
     borderClass: "border-sky-400",
     badgeBg: "bg-sky-900/90 text-sky-200",
     glow: "shadow-sky-400/20",
+    activeRing: "ring-sky-400",
+    hoverRing: "hover:ring-sky-300",
   },
   archeologist: {
     name: "LEO",
@@ -29,6 +33,8 @@ export const CHARACTER_CONFIG = {
     borderClass: "border-amber-400",
     badgeBg: "bg-amber-900/90 text-amber-200",
     glow: "shadow-amber-400/20",
+    activeRing: "ring-amber-400",
+    hoverRing: "hover:ring-amber-300",
   },
   chemist: {
     name: "MAYA",
@@ -38,6 +44,8 @@ export const CHARACTER_CONFIG = {
     borderClass: "border-purple-400",
     badgeBg: "bg-purple-900/90 text-purple-200",
     glow: "shadow-purple-400/20",
+    activeRing: "ring-purple-400",
+    hoverRing: "hover:ring-purple-300",
   },
   biologist: {
     name: "LUNA",
@@ -47,6 +55,8 @@ export const CHARACTER_CONFIG = {
     borderClass: "border-emerald-400",
     badgeBg: "bg-emerald-900/90 text-emerald-200",
     glow: "shadow-emerald-400/20",
+    activeRing: "ring-emerald-400",
+    hoverRing: "hover:ring-emerald-300",
   },
 };
 
@@ -76,7 +86,7 @@ export default function HybridScienceCard({
 
   return (
     <article
-      className={`relative aspect-[2/3] w-full ${extraCompact ? "max-w-[135px]" : compact ? "max-w-[180px]" : "max-w-[310px]"} overflow-hidden rounded-3xl border-4 bg-slate-950 shadow-2xl transition-all duration-300 ${config.borderClass} ${config.glow} ${isActiveTurn ? "scale-105 animate-pulse ring-4 ring-amber-400" : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
+      className={`relative aspect-[2/3] w-full ${extraCompact ? "max-w-[135px]" : compact ? "max-w-[180px]" : "max-w-[310px]"} overflow-hidden rounded-3xl border-4 bg-slate-950 shadow-2xl transition-all duration-300 ${config.borderClass} ${config.glow} ${isActiveTurn ? `scale-105 animate-pulse ring-4 ${config.activeRing}` : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
     >
       <Image
         alt={`${config.name}, ${config.profession}`}
