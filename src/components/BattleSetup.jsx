@@ -1,49 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import HybridScienceCard, { CHARACTER_CONFIG } from "./HybridScienceCard";
+import HybridScienceCard, { TEAM_COLOR_CONFIG } from "./HybridScienceCard";
 import { fetchQuestionsForGame } from "../lib/questionService";
 
 const COLORS = [
-  { name: "Ruby", value: "ruby", className: "bg-rose-500" },
-  { name: "Ocean", value: "ocean", className: "bg-cyan-500" },
-  { name: "Sun", value: "sun", className: "bg-amber-400" },
-  { name: "Forest", value: "forest", className: "bg-emerald-500" },
-  { name: "Violet", value: "violet", className: "bg-violet-500" },
+  "ruby", "coral", "sun", "lime", "forest", "ocean", "sky", "violet", "fuchsia", "slate",
 ];
 
 const QUESTION_COUNTS = [5, 20, 40, 60];
-const CHARACTER_KEYS = ["engineer", "astronaut", "archeologist", "chemist", "biologist"];
 
 export default function BattleSetup() {
+  const router = useRouter();
   const [teamCount, setTeamCount] = useState(3);
   const [questionCount, setQuestionCount] = useState(20);
   const [timeLimit, setTimeLimit] = useState(60);
   const [teamColors, setTeamColors] = useState(["ruby", "ocean", "sun"]);
-  const [teamCharacters, setTeamCharacters] = useState(["engineer", "astronaut", "archeologist"]);
   const [teamNames, setTeamNames] = useState(["Team 1", "Team 2", "Team 3"]);
   const [game, setGame] = useState(null);
   const [isCreatingBattle, setIsCreatingBattle] = useState(false);
 
   function updateTeamCount(count) {
     setTeamCount(count);
-    setTeamColors((colors) =>
-      Array.from({ length: count }, (_, index) => colors[index] || COLORS[index].value),
-    );
-    setTeamCharacters((characters) =>
-      Array.from({ length: count }, (_, index) => characters[index] || CHARACTER_KEYS[index]),
-    );
+    setTeamColors((colors) => Array.from({ length: count }, (_, index) => colors[index] || COLORS[index]));
     setTeamNames((names) =>
       Array.from({ length: count }, (_, index) => names[index] || `Team ${index + 1}`),
-    );
-  }
-
-  function updateTeamCharacter(index, characterKey) {
-    setTeamCharacters((characters) =>
-      characters.map((currentCharacter, characterIndex) =>
-        characterIndex === index ? characterKey : currentCharacter,
-      ),
     );
   }
 
@@ -65,10 +48,9 @@ export default function BattleSetup() {
 
     setGame({
       phase: "dashboard",
-      teams: teamCharacters.slice(0, teamCount).map((characterKey, index) => ({
+      teams: teamColors.slice(0, teamCount).map((_, index) => ({
         id: `team-${index + 1}`,
         name: teamNames[index].trim() || `Team ${index + 1}`,
-        characterKey,
         color: teamColors[index],
         hearts: 5,
         points: 0,
@@ -86,7 +68,18 @@ export default function BattleSetup() {
     setIsCreatingBattle(false);
   }
 
-  if (game) return <BattleGame game={game} onUpdate={setGame} />;
+  if (game) {
+    return (
+      <BattleGame
+        game={game}
+        onMainMenu={() => {
+          setGame(null);
+          router.replace("/");
+        }}
+        onUpdate={setGame}
+      />
+    );
+  }
 
   return (
     <main className="manga-shell min-h-screen bg-slate-950 px-5 py-8 pb-24 text-white sm:px-8 lg:pb-36">
@@ -99,7 +92,7 @@ export default function BattleSetup() {
           <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · Battle</p>
           <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Set up your battle</h1>
           <p className="mt-4 max-w-2xl leading-7 text-slate-400">
-            Choose the match rules and give each team a character. The selected character and name will stay with that team throughout the game.
+            Choose the match rules, team names, and a unique color for each team.
           </p>
         </header>
 
@@ -167,14 +160,13 @@ export default function BattleSetup() {
             </section>
 
             <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-              <h2 className="text-lg font-black">Choose team characters</h2>
+              <h2 className="text-lg font-black">Set team names and colors</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Each team picks one unique character. Their picture, name, hearts, and score appear on the dashboard.
+                Each team picks a unique color. Their name, hearts, and score appear throughout the game.
               </p>
               <div className="mt-6 space-y-8">
                 {Array.from({ length: teamCount }, (_, teamIndex) => {
-                  const selectedCharacter = teamCharacters[teamIndex];
-                  const selectedConfig = CHARACTER_CONFIG[selectedCharacter];
+                  const selectedColor = teamColors[teamIndex];
                   return (
                     <div className="border-t border-slate-800 pt-6 first:border-t-0 first:pt-0" key={teamIndex}>
                       <div className="mb-4 flex items-center justify-between gap-3">
@@ -182,7 +174,7 @@ export default function BattleSetup() {
                           <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
                             Team {teamIndex + 1}
                           </p>
-                          <p className="mt-1 font-black">{selectedConfig.name} · {selectedConfig.profession}</p>
+                          <p className="mt-1 font-black">{TEAM_COLOR_CONFIG[selectedColor].name}</p>
                         </div>
                         <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">
                           Selected
@@ -201,42 +193,30 @@ export default function BattleSetup() {
                           value={teamNames[teamIndex]}
                         />
                       </label>
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                        {CHARACTER_KEYS.map((characterKey) => {
-                          const character = CHARACTER_CONFIG[characterKey];
-                          const isSelected = selectedCharacter === characterKey;
-                          const isTakenByOtherTeam = teamCharacters.some(
-                            (currentCharacter, currentIndex) =>
-                              currentIndex !== teamIndex && currentCharacter === characterKey,
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                        {COLORS.map((colorKey) => {
+                          const color = TEAM_COLOR_CONFIG[colorKey];
+                          const isSelected = selectedColor === colorKey;
+                          const isTakenByOtherTeam = teamColors.some(
+                            (currentColor, currentIndex) => currentIndex !== teamIndex && currentColor === colorKey,
                           );
                           return (
                             <button
-                              aria-label={`Select ${character.name} for Team ${teamIndex + 1}`}
+                              aria-label={`Select ${color.name} for Team ${teamIndex + 1}`}
                               className={`relative min-w-0 rounded-2xl text-left transition ${
                                 isSelected
-                                  ? "z-10 scale-[1.02]"
+                                  ? `z-10 scale-[1.02] ring-2 ${color.active}`
                                   : isTakenByOtherTeam
                                     ? "cursor-not-allowed opacity-30"
-                                    : `hover:scale-[1.02] hover:ring-2 ${character.hoverRing}`
+                                    : `hover:scale-[1.02] hover:ring-2 ${color.active}`
                               }`}
                               disabled={isTakenByOtherTeam}
-                              key={characterKey}
-                              onClick={() => updateTeamCharacter(teamIndex, characterKey)}
+                              key={colorKey}
+                              onClick={() => setTeamColors((colors) => colors.map((currentColor, currentIndex) => currentIndex === teamIndex ? colorKey : currentColor))}
                               type="button"
                             >
-                              <HybridScienceCard
-                                characterKey={characterKey}
-                                hearts={5}
-                                isActiveTurn={false}
-                                isEliminated={false}
-                                points={0}
-                                teamName={`Team ${teamIndex + 1}`}
-                              />
-                              {isSelected && (
-                                <span className={`absolute left-2 top-2 z-20 rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider ${character.badgeBg}`}>
-                                  Picked
-                                </span>
-                              )}
+                              <span className={`flex h-16 items-center justify-center rounded-xl ${color.swatch} text-sm font-black text-slate-950`}>{color.name}</span>
+                              {isSelected && <span className="mt-1 block text-center text-[10px] font-black uppercase tracking-wider text-emerald-300">Picked</span>}
                             </button>
                           );
                         })}
@@ -311,7 +291,7 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
           {orderedTeams.map((team) => (
             <div className="relative min-w-0" key={team.id}>
               <HybridScienceCard
-                characterKey={team.characterKey}
+                color={team.color}
                 hearts={team.hearts}
                 isActiveTurn={team.id === highlightedTeamId}
                 isEliminated={team.hearts === 0}
@@ -334,7 +314,7 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
   );
 }
 
-function VictoryScreen({ teams }) {
+function VictoryScreen({ teams, onMainMenu }) {
   const allTeamsEliminated = teams.every((team) => team.hearts === 0);
   const eligibleTeams = allTeamsEliminated
     ? teams
@@ -361,7 +341,7 @@ function VictoryScreen({ teams }) {
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Champion</p>
           <div className="mt-4 flex justify-center">
             <HybridScienceCard
-              characterKey={winner.characterKey}
+              color={winner.color}
               hearts={winner.hearts}
               isActiveTurn
               isEliminated={winner.hearts === 0}
@@ -378,12 +358,13 @@ function VictoryScreen({ teams }) {
         </div>
 
       </div>
-      <Link
-        className="fixed bottom-[62px] left-1/2 z-[60] inline-flex -translate-x-1/2 rounded-xl border-2 border-white bg-amber-400 px-8 py-4 text-base font-black text-slate-950 shadow-2xl shadow-black/60 hover:bg-amber-300 lg:bottom-[102px]"
-        href="/"
+      <button
+        className="fixed bottom-[62px] left-1/2 z-[60] inline-flex -translate-x-1/2 rounded-xl border-2 border-white bg-amber-400 px-8 py-4 text-base font-black text-slate-950 shadow-2xl shadow-black/60 hover:bg-amber-300"
+        onClick={onMainMenu}
+        type="button"
       >
         Go to main menu
-      </Link>
+      </button>
     </main>
   );
 }
@@ -398,7 +379,7 @@ function VictoryStat({ label, team, value }) {
   );
 }
 
-function BattleGame({ game, onUpdate }) {
+function BattleGame({ game, onMainMenu, onUpdate }) {
   const [isRolling, setIsRolling] = useState(false);
   const [diceFace, setDiceFace] = useState(1);
   const [secondsLeft, setSecondsLeft] = useState(game.timeLimit ?? 60);
@@ -545,7 +526,7 @@ function BattleGame({ game, onUpdate }) {
   }
 
   if (game.phase === "victory") {
-    return <VictoryScreen teams={game.teams} />;
+    return <VictoryScreen onMainMenu={onMainMenu} teams={game.teams} />;
   }
 
   if (game.phase === "decision" || game.phase === "question") {

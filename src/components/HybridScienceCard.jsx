@@ -1,63 +1,16 @@
 "use client";
 
-import Image from "next/image";
-
-export const CHARACTER_CONFIG = {
-  engineer: {
-    name: "NOAH",
-    profession: "ENGINEER",
-    theme: "slate",
-    image: "/images/engineer.jpeg",
-    borderClass: "border-slate-400",
-    badgeBg: "bg-slate-800 text-slate-200",
-    glow: "shadow-slate-400/20",
-    activeRing: "ring-slate-400",
-    hoverRing: "hover:ring-slate-300",
-  },
-  astronaut: {
-    name: "STELLA",
-    profession: "ASTRONAUT",
-    theme: "sky",
-    image: "/images/astronaut.jpeg",
-    borderClass: "border-sky-400",
-    badgeBg: "bg-sky-900/90 text-sky-200",
-    glow: "shadow-sky-400/20",
-    activeRing: "ring-sky-400",
-    hoverRing: "hover:ring-sky-300",
-  },
-  archeologist: {
-    name: "LEO",
-    profession: "ARCHEOLOGIST",
-    theme: "amber",
-    image: "/images/archeologist.jpeg",
-    borderClass: "border-amber-400",
-    badgeBg: "bg-amber-900/90 text-amber-200",
-    glow: "shadow-amber-400/20",
-    activeRing: "ring-amber-400",
-    hoverRing: "hover:ring-amber-300",
-  },
-  chemist: {
-    name: "MAYA",
-    profession: "CHEMIST",
-    theme: "purple",
-    image: "/images/chemist.jpeg",
-    borderClass: "border-purple-400",
-    badgeBg: "bg-purple-900/90 text-purple-200",
-    glow: "shadow-purple-400/20",
-    activeRing: "ring-purple-400",
-    hoverRing: "hover:ring-purple-300",
-  },
-  biologist: {
-    name: "LUNA",
-    profession: "BIOLOGIST",
-    theme: "emerald",
-    image: "/images/biologist.jpeg",
-    borderClass: "border-emerald-400",
-    badgeBg: "bg-emerald-900/90 text-emerald-200",
-    glow: "shadow-emerald-400/20",
-    activeRing: "ring-emerald-400",
-    hoverRing: "hover:ring-emerald-300",
-  },
+export const TEAM_COLOR_CONFIG = {
+  ruby: { name: "Ruby", surface: "bg-rose-950", border: "border-rose-400", active: "ring-rose-400", swatch: "bg-rose-500" },
+  coral: { name: "Coral", surface: "bg-orange-950", border: "border-orange-400", active: "ring-orange-400", swatch: "bg-orange-500" },
+  sun: { name: "Sun", surface: "bg-amber-950", border: "border-amber-400", active: "ring-amber-400", swatch: "bg-amber-400" },
+  lime: { name: "Lime", surface: "bg-lime-950", border: "border-lime-400", active: "ring-lime-400", swatch: "bg-lime-400" },
+  forest: { name: "Forest", surface: "bg-emerald-950", border: "border-emerald-400", active: "ring-emerald-400", swatch: "bg-emerald-500" },
+  ocean: { name: "Ocean", surface: "bg-cyan-950", border: "border-cyan-400", active: "ring-cyan-400", swatch: "bg-cyan-400" },
+  sky: { name: "Sky", surface: "bg-sky-950", border: "border-sky-400", active: "ring-sky-400", swatch: "bg-sky-400" },
+  violet: { name: "Violet", surface: "bg-violet-950", border: "border-violet-400", active: "ring-violet-400", swatch: "bg-violet-500" },
+  fuchsia: { name: "Fuchsia", surface: "bg-fuchsia-950", border: "border-fuchsia-400", active: "ring-fuchsia-400", swatch: "bg-fuchsia-500" },
+  slate: { name: "Slate", surface: "bg-slate-800", border: "border-slate-300", active: "ring-slate-300", swatch: "bg-slate-400" },
 };
 
 function Heart({ active }) {
@@ -73,7 +26,7 @@ function Heart({ active }) {
 }
 
 export default function HybridScienceCard({
-  characterKey,
+  color = "slate",
   teamName,
   hearts,
   points,
@@ -82,22 +35,14 @@ export default function HybridScienceCard({
   compact = false,
   extraCompact = false,
 }) {
-  const config = CHARACTER_CONFIG[characterKey] || CHARACTER_CONFIG.engineer;
+  const config = TEAM_COLOR_CONFIG[color] || TEAM_COLOR_CONFIG.slate;
 
   return (
     <article
-      className={`relative aspect-[2/3] w-full ${extraCompact ? "max-w-[135px]" : compact ? "max-w-[180px]" : "max-w-[310px]"} overflow-hidden rounded-3xl border-4 bg-slate-950 shadow-2xl transition-all duration-300 ${config.borderClass} ${config.glow} ${isActiveTurn ? `scale-105 animate-pulse ring-4 ${config.activeRing}` : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
+      className={`relative min-h-24 w-full ${extraCompact ? "max-w-[280px]" : compact ? "max-w-[360px]" : "max-w-[520px]"} overflow-hidden rounded-3xl border-4 ${config.surface} shadow-2xl transition-all duration-300 ${config.border} ${isActiveTurn ? `scale-105 animate-pulse ring-4 ${config.active}` : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
     >
-      <Image
-        alt={`${config.name}, ${config.profession}`}
-        className="object-cover"
-        fill
-        priority
-        sizes="(max-width: 640px) 80vw, 310px"
-        src={config.image}
-      />
-
-      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center bg-gradient-to-b from-slate-950/90 to-transparent p-3">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/30" />
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center p-2">
         <div className="flex gap-0.5" aria-label={`${hearts} of 5 hearts remaining`}>
           {Array.from({ length: 5 }, (_, index) => (
             <Heart active={index < Math.max(0, Math.min(5, hearts))} key={index} />
@@ -105,9 +50,11 @@ export default function HybridScienceCard({
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col bg-gradient-to-t from-slate-950 via-slate-950/85 to-transparent p-4 pt-14">
-        <p className={`${extraCompact ? "text-base" : compact ? "text-lg" : "text-2xl"} self-end font-black text-amber-400`}>{points}</p>
-        <h2 className={`w-full truncate text-center ${extraCompact ? "text-xs" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-white`}>{teamName}</h2>
+      <div className="absolute inset-y-0 right-0 z-10 flex items-center p-4">
+        <p className={`${extraCompact ? "text-base" : compact ? "text-lg" : "text-2xl"} font-black text-amber-400`}>{points}</p>
+      </div>
+      <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-3 pt-8 text-center">
+        <h2 className={`truncate ${extraCompact ? "text-xs" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-white`}>{teamName}</h2>
       </div>
 
       {isEliminated && (
