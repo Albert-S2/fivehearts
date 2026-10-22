@@ -1,5 +1,4 @@
 import Link from "next/link";
-import AdContainer from "../../components/AdContainer";
 
 const MODES = [
   {
@@ -61,11 +60,6 @@ export default function GamePage() {
               </Link>
             ))}
           </div>
-          <AdContainer
-            className="mx-auto mt-10 h-[250px] w-[300px]"
-            format="rectangle"
-            slotId="five-hearts-category-selection"
-          />
         </section>
 
         <footer className="border-t border-slate-800 pt-5 text-center text-xs text-slate-600">

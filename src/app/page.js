@@ -1,5 +1,4 @@
 import Link from "next/link";
-import AdContainer from "../components/AdContainer";
 
 export default function Home() {
   return (
@@ -14,15 +13,6 @@ export default function Home() {
           </div>
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">Play together</span>
         </header>
-
-        <div className="mt-6">
-          <AdContainer
-            className="mx-auto h-[90px] w-full max-w-[728px]"
-            format="anchor"
-            slotId="five-hearts-home-top"
-            style={{ height: 90, minHeight: 90, width: "100%" }}
-          />
-        </div>
 
         <section className="flex flex-1 flex-col items-center justify-center py-12 text-center">
           <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Choose a game</p>
@@ -53,15 +43,6 @@ export default function Home() {
             </div>
           </Link>
         </section>
-
-        <div className="pb-6">
-          <AdContainer
-            className="mx-auto h-[90px] w-full max-w-[728px]"
-            format="anchor"
-            slotId="five-hearts-home-bottom"
-            style={{ height: 90, minHeight: 90, width: "100%" }}
-          />
-        </div>
 
         <footer className="border-t border-slate-800 pt-5 text-center text-xs text-slate-600">
           More games will appear here in the future.
