@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import HybridScienceCard, { CHARACTER_CONFIG } from "./HybridScienceCard";
+import { fetchQuestionsForGame } from "../lib/questionService";
 
 const COLORS = [
   { name: "Ruby", value: "ruby", className: "bg-rose-500" },
@@ -14,50 +15,6 @@ const COLORS = [
 
 const QUESTION_COUNTS = [5, 20, 40, 60];
 const CHARACTER_KEYS = ["engineer", "astronaut", "archeologist", "chemist", "biologist"];
-const PRACTICE_QUESTIONS = [
-  {
-    category: "Science",
-    text: "Which planet is closest to the Sun?",
-    answers: ["Venus", "Mercury", "Mars", "Earth"],
-    correctAnswer: "Mercury",
-  },
-  {
-    category: "Geography",
-    text: "What is the largest ocean on Earth?",
-    answers: ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Arctic Ocean"],
-    correctAnswer: "Pacific Ocean",
-  },
-  {
-    category: "History",
-    text: "Which ancient civilization built Machu Picchu?",
-    answers: ["Roman", "Inca", "Viking", "Egyptian"],
-    correctAnswer: "Inca",
-  },
-  {
-    category: "Nature",
-    text: "What process do plants use to turn sunlight into energy?",
-    answers: ["Digestion", "Respiration", "Photosynthesis", "Fermentation"],
-    correctAnswer: "Photosynthesis",
-  },
-  {
-    category: "Space",
-    text: "Which star is at the center of our solar system?",
-    answers: ["Sirius", "Polaris", "The Sun", "Betelgeuse"],
-    correctAnswer: "The Sun",
-  },
-];
-
-function shuffleItems(items) {
-  return [...items].sort(() => Math.random() - 0.5);
-}
-
-function createPracticeQuestions(count) {
-  const questions = [];
-  while (questions.length < count) {
-    questions.push(...shuffleItems(PRACTICE_QUESTIONS));
-  }
-  return questions.slice(0, count);
-}
 
 export default function BattleSetup() {
   const [teamCount, setTeamCount] = useState(3);
@@ -67,6 +24,7 @@ export default function BattleSetup() {
   const [teamCharacters, setTeamCharacters] = useState(["engineer", "astronaut", "archeologist"]);
   const [teamNames, setTeamNames] = useState(["Team 1", "Team 2", "Team 3"]);
   const [game, setGame] = useState(null);
+  const [isCreatingBattle, setIsCreatingBattle] = useState(false);
 
   function updateTeamCount(count) {
     setTeamCount(count);
@@ -95,7 +53,16 @@ export default function BattleSetup() {
     );
   }
 
-  function createBattle() {
+  async function createBattle() {
+    setIsCreatingBattle(true);
+    const questions = await fetchQuestionsForGame(questionCount);
+
+    if (questions.length === 0) {
+      console.error("No usable questions are available to start the battle.");
+      setIsCreatingBattle(false);
+      return;
+    }
+
     setGame({
       phase: "dashboard",
       teams: teamCharacters.slice(0, teamCount).map((characterKey, index) => ({
@@ -107,8 +74,8 @@ export default function BattleSetup() {
         points: 0,
         questionsAsked: 0,
       })),
-      questionCount,
-      questions: createPracticeQuestions(questionCount),
+      questionCount: questions.length,
+      questions,
       timeLimit,
       startingTeamId: null,
       answeringTeamId: null,
@@ -116,6 +83,7 @@ export default function BattleSetup() {
       questionNumber: 1,
       lastTransition: "Roll the dice to create the team order.",
     });
+    setIsCreatingBattle(false);
   }
 
   if (game) return <BattleGame game={game} onUpdate={setGame} />;
@@ -301,8 +269,8 @@ export default function BattleSetup() {
                 <dd className="font-bold text-rose-400">5 each</dd>
               </div>
             </dl>
-            <button className="mt-8 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300" onClick={createBattle} type="button">
-              Create battle
+            <button className="mt-8 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-60" disabled={isCreatingBattle} onClick={createBattle} type="button">
+              {isCreatingBattle ? "Loading questions..." : "Create battle"}
             </button>
           </aside>
         </div>
@@ -367,7 +335,11 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
 }
 
 function VictoryScreen({ teams }) {
-  const winner = [...teams].sort((first, second) => second.points - first.points)[0];
+  const allTeamsEliminated = teams.every((team) => team.hearts === 0);
+  const eligibleTeams = allTeamsEliminated
+    ? teams
+    : teams.filter((team) => team.hearts > 0);
+  const winner = [...eligibleTeams].sort((first, second) => second.points - first.points)[0];
   const pointsLeader = winner;
   const heartsLeader = [...teams].sort((first, second) => second.hearts - first.hearts)[0];
   const questionsLeader = [...teams].sort((first, second) => second.questionsAsked - first.questionsAsked)[0];
@@ -378,7 +350,11 @@ function VictoryScreen({ teams }) {
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · Battle complete</p>
           <h1 className="mt-4 text-5xl font-black tracking-tight text-amber-300 sm:text-7xl">Victory!</h1>
-          <p className="mt-4 text-lg text-slate-300">The final question has been answered.</p>
+          <p className="mt-4 text-lg text-slate-300">
+            {allTeamsEliminated
+              ? "Every team was eliminated. The team with the most points wins."
+              : "The winner is the surviving team with the most points."}
+          </p>
         </div>
 
         <section className="mx-auto mt-10 max-w-sm text-center">
@@ -396,7 +372,7 @@ function VictoryScreen({ teams }) {
         </section>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          <VictoryStat label="Most points" team={pointsLeader} value={pointsLeader.points} />
+          <VictoryStat label={allTeamsEliminated ? "Most points" : "Most points among survivors"} team={pointsLeader} value={pointsLeader.points} />
           <VictoryStat label="Most hearts left" team={heartsLeader} value={heartsLeader.hearts} />
           <VictoryStat label="Most questions asked" team={questionsLeader} value={questionsLeader.questionsAsked} />
         </div>
@@ -430,9 +406,18 @@ function BattleGame({ game, onUpdate }) {
   const [secondsLeft, setSecondsLeft] = useState(game.timeLimit ?? 60);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [answerResult, setAnswerResult] = useState(null);
-  const activeQuestion = game.questions?.[game.questionNumber - 1] || PRACTICE_QUESTIONS[0];
-  const [visibleAnswers, setVisibleAnswers] = useState(activeQuestion.answers);
+  const [isCorrectAnswerRevealed, setIsCorrectAnswerRevealed] = useState(false);
+  const [isFeedbackReady, setIsFeedbackReady] = useState(false);
+  const activeQuestion = game.questions?.[game.questionNumber - 1];
+  const [visibleAnswers, setVisibleAnswers] = useState(activeQuestion?.options || []);
   const resolveAnswerRef = useRef(null);
+  const feedbackTimerRef = useRef(null);
+
+  useEffect(() => () => {
+    if (feedbackTimerRef.current) {
+      window.clearTimeout(feedbackTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (game.phase !== "question" || answerResult || game.timeLimit === null) return undefined;
@@ -465,15 +450,26 @@ function BattleGame({ game, onUpdate }) {
       const hearts = Math.max(team.hearts - 1, 0);
       return { ...team, hearts, questionsAsked };
     });
+    const allTeamsEliminated = updatedTeams.every((team) => team.hearts === 0);
 
     setAnswerResult({ isCorrect, timedOut });
-    onUpdate({ ...game, teams: updatedTeams });
+    setIsCorrectAnswerRevealed(isCorrect);
+    setIsFeedbackReady(isCorrect);
+    if (!isCorrect) {
+      feedbackTimerRef.current = window.setTimeout(() => {
+        setIsCorrectAnswerRevealed(true);
+        setIsFeedbackReady(true);
+      }, 1000);
+    }
+    onUpdate({ ...game, teams: updatedTeams, allTeamsEliminated });
   }, [answerResult, game, onUpdate]);
 
   function chooseAnswer(answer, index) {
     if (answerResult) return;
     setSelectedAnswer(index);
-    resolveAnswer(answer === activeQuestion.correctAnswer);
+    setIsCorrectAnswerRevealed(false);
+    setIsFeedbackReady(false);
+    resolveAnswer(index === activeQuestion.correctAnswerIndex);
   }
 
   useEffect(() => {
@@ -484,8 +480,10 @@ function BattleGame({ game, onUpdate }) {
     setSecondsLeft(game.timeLimit ?? 60);
     setSelectedAnswer(null);
     setAnswerResult(null);
-    const nextQuestion = game.questions[(game.questionNumber - 1) % game.questions.length];
-    setVisibleAnswers(nextQuestion.answers);
+    setIsCorrectAnswerRevealed(false);
+    setIsFeedbackReady(false);
+    const nextQuestion = game.questions[game.questionNumber - 1];
+    setVisibleAnswers(nextQuestion.options);
     onUpdate({ ...game, phase: "question", answeringTeamId: teamId });
   }
 
@@ -510,7 +508,7 @@ function BattleGame({ game, onUpdate }) {
 
     onUpdate({
       ...game,
-      phase: game.questionNumber >= game.questionCount ? "victory" : "decision",
+      phase: game.questionNumber >= game.questionCount || game.allTeamsEliminated ? "victory" : "decision",
       startingTeamId: nextTeamId,
       answeringTeamId: null,
       questionNumber: game.questionNumber + 1,
@@ -518,6 +516,8 @@ function BattleGame({ game, onUpdate }) {
     });
     setSelectedAnswer(null);
     setAnswerResult(null);
+    setIsCorrectAnswerRevealed(false);
+    setIsFeedbackReady(false);
     setSecondsLeft(game.timeLimit ?? 60);
   }
 
@@ -564,7 +564,7 @@ function BattleGame({ game, onUpdate }) {
             </p>
             <div className="mt-6 rounded-3xl border border-amber-400/30 bg-slate-900 p-7 text-center">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Category</p>
-              <h1 className="mt-4 text-4xl font-black text-amber-300">{activeQuestion.category}</h1>
+              <h1 className="mt-4 text-4xl font-black text-amber-300">{activeQuestion?.category}</h1>
               <p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-slate-300">
                 {startingTeam?.name}, choose who will answer this question.
               </p>
@@ -601,7 +601,7 @@ function BattleGame({ game, onUpdate }) {
       <div className="mx-auto max-w-4xl px-6 py-10">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
-              Question {game.questionNumber} · {activeQuestion.category}
+              Question {game.questionNumber} · {activeQuestion?.category}
             </p>
             {game.timeLimit !== null && (
               <span className={`rounded-full border px-4 py-2 text-xl font-black tabular-nums ${secondsLeft <= 10 ? "border-red-400 text-red-400" : "border-amber-400 text-amber-300"}`}>
@@ -609,16 +609,18 @@ function BattleGame({ game, onUpdate }) {
               </span>
             )}
           </div>
-          <h1 className="mt-4 text-3xl font-black sm:text-5xl">{activeQuestion.text}</h1>
+          <h1 className="mt-4 text-3xl font-black sm:text-5xl">{activeQuestion?.questionText}</h1>
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             {visibleAnswers.map((answer, index) => (
               <button
                 className={`rounded-2xl border p-5 text-left text-lg font-bold ${
-                  selectedAnswer === index
-                    ? answerResult?.isCorrect
-                      ? "border-emerald-400 bg-emerald-400/10"
-                      : "border-red-400 bg-red-400/10"
-                    : "border-slate-700 bg-slate-900 hover:border-amber-400"
+                  answerResult && index === activeQuestion.correctAnswerIndex && isCorrectAnswerRevealed
+                    ? "border-emerald-400 bg-emerald-400/20 text-emerald-100"
+                    : selectedAnswer === index && answerResult && !answerResult.isCorrect
+                      ? "border-red-400 bg-red-400/20 text-red-100"
+                      : selectedAnswer === index && answerResult?.isCorrect
+                        ? "border-emerald-400 bg-emerald-400/20 text-emerald-100"
+                        : "border-slate-700 bg-slate-900 hover:border-amber-400"
                 }`}
                 disabled={Boolean(answerResult)}
                 key={answer}
@@ -637,13 +639,24 @@ function BattleGame({ game, onUpdate }) {
                 ? `${answeringTeam?.name} is correct and earns 10 points!`
                 : `${answeringTeam?.name} is incorrect. One heart is lost.`}
           </p>
+          {answerResult && activeQuestion?.explanation && (
+            <div className="mt-6 rounded-2xl border border-sky-400/30 bg-sky-400/10 p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-300">Explanation</p>
+              <p className="mt-2 leading-7 text-slate-200">{activeQuestion.explanation}</p>
+            </div>
+          )}
           {answerResult && (
             <button
-              className="mt-6 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300"
+              className="mt-6 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-50"
+              disabled={!isFeedbackReady}
               onClick={moveToNextQuestion}
               type="button"
             >
-              {game.questionNumber >= game.questionCount ? "See results" : "Next question"}
+              {!isFeedbackReady
+                ? "Revealing answer..."
+                : game.questionNumber >= game.questionCount
+                  ? "See results"
+                  : "Next question"}
             </button>
           )}
         </div>
