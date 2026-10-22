@@ -345,7 +345,7 @@ function VictoryScreen({ teams }) {
   const questionsLeader = [...teams].sort((first, second) => second.questionsAsked - first.questionsAsked)[0];
 
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 px-6 py-10 pb-32 text-white lg:pb-40">
+    <main className="manga-shell relative z-[55] min-h-screen bg-slate-950 px-6 py-10 pb-32 text-white lg:pb-40">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · Battle complete</p>
@@ -377,15 +377,13 @@ function VictoryScreen({ teams }) {
           <VictoryStat label="Most questions asked" team={questionsLeader} value={questionsLeader.questionsAsked} />
         </div>
 
-        <div className="relative z-10 mt-10 pb-24 text-center">
-          <Link
-            className="inline-flex rounded-xl bg-amber-400 px-6 py-4 text-base font-black text-slate-950 shadow-lg shadow-amber-950/40 hover:bg-amber-300"
-            href="/"
-          >
-            Back to main menu
-          </Link>
-        </div>
       </div>
+      <Link
+        className="fixed bottom-[62px] left-1/2 z-[60] inline-flex -translate-x-1/2 rounded-xl border-2 border-white bg-amber-400 px-8 py-4 text-base font-black text-slate-950 shadow-2xl shadow-black/60 hover:bg-amber-300 lg:bottom-[102px]"
+        href="/"
+      >
+        Go to main menu
+      </Link>
     </main>
   );
 }
