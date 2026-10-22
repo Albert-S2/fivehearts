@@ -381,7 +381,7 @@ function VictoryStat({ label, team, value }) {
 
 function BattleGame({ game, onMainMenu, onUpdate }) {
   const [isRolling, setIsRolling] = useState(false);
-  const [diceFace, setDiceFace] = useState(1);
+  const [diceFace, setDiceFace] = useState("?");
   const [secondsLeft, setSecondsLeft] = useState(game.timeLimit ?? 60);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [answerResult, setAnswerResult] = useState(null);
@@ -424,7 +424,8 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     const updatedTeams = game.teams.map((team) => {
       if (team.id !== answeringTeam.id) return team;
       const questionsAsked = team.questionsAsked + 1;
-      if (isCorrect) return { ...team, points: team.points + 10, questionsAsked };
+      const pointsAwarded = ["Hard", "Difficult"].includes(activeQuestion.difficultyLabel) ? 20 : 10;
+      if (isCorrect) return { ...team, points: team.points + pointsAwarded, questionsAsked };
 
       const hearts = Math.max(team.hearts - 1, 0);
       return { ...team, hearts, questionsAsked };
@@ -441,7 +442,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
       }, 1000);
     }
     onUpdate({ ...game, teams: updatedTeams, allTeamsEliminated });
-  }, [answerResult, game, onUpdate]);
+  }, [activeQuestion, answerResult, game, onUpdate]);
 
   function chooseAnswer(answer, index) {
     if (answerResult) return;
@@ -505,7 +506,8 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     setIsRolling(true);
     let rolls = 0;
     const interval = window.setInterval(() => {
-      setDiceFace(Math.floor(Math.random() * 6) + 1);
+      const randomTeam = game.teams[Math.floor(Math.random() * game.teams.length)];
+      setDiceFace(randomTeam.name);
       rolls += 1;
       if (rolls === 10) {
         window.clearInterval(interval);
@@ -513,7 +515,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
           .sort(() => Math.random() - 0.5)
           .map((team) => team.id);
         const team = game.teams.find((item) => item.id === order[0]);
-        setDiceFace(1);
+        setDiceFace(team.name);
         onUpdate({
           ...game,
           startingTeamId: team.id,
@@ -543,7 +545,12 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
             </p>
             <div className="mt-6 rounded-3xl border border-amber-400/30 bg-slate-900 p-7 text-center">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Category</p>
-              <h1 className="mt-4 text-4xl font-black text-amber-300">{activeQuestion?.category}</h1>
+              <h1 className="mt-4 flex items-center justify-center gap-3 text-4xl font-black text-amber-300">
+                {activeQuestion?.category}
+                <span className="rounded-full border border-sky-400/40 bg-sky-400/10 px-3 py-1 text-sm uppercase tracking-[0.15em] text-sky-300">
+                  {activeQuestion?.difficultyLabel}
+                </span>
+              </h1>
               <p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-slate-300">
                 {startingTeam?.name}, choose who will answer this question.
               </p>
@@ -581,6 +588,9 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
               Question {game.questionNumber} · {activeQuestion?.category}
+              <span className="ml-2 rounded-full border border-sky-400/40 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-sky-300">
+                {activeQuestion?.difficultyLabel}
+              </span>
             </p>
             {game.timeLimit !== null && (
               <span className={`rounded-full border px-4 py-2 text-xl font-black tabular-nums ${secondsLeft <= 10 ? "border-red-400 text-red-400" : "border-amber-400 text-amber-300"}`}>
@@ -615,7 +625,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
             {answerResult?.timedOut
               ? `${answeringTeam?.name} ran out of time. One heart is lost.`
               : answerResult?.isCorrect
-                ? `${answeringTeam?.name} is correct and earns 10 points!`
+                ? `${answeringTeam?.name} is correct and earns ${["Hard", "Difficult"].includes(activeQuestion?.difficultyLabel) ? 20 : 10} points!`
                 : `${answeringTeam?.name} is incorrect. One heart is lost.`}
           </p>
           {answerResult && activeQuestion?.explanation && (
@@ -661,15 +671,17 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
           <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Starting team</p>
             <div className="mt-6 flex flex-col items-center text-center">
-              <div className={`grid h-24 w-24 place-items-center rounded-3xl border-4 border-amber-400 bg-slate-800 text-5xl font-black text-amber-300 ${isRolling ? "animate-bounce" : ""}`}>
+              <div className={`grid h-32 w-64 max-w-full place-items-center rounded-3xl border-4 border-amber-400 bg-slate-800 px-4 text-center text-2xl font-black text-amber-300 ${isRolling ? "animate-bounce" : ""}`}>
                 {diceFace}
               </div>
               <p className="mt-5 text-xl font-black">
                 {game.startingTeamId ? `${game.teams.find((team) => team.id === game.startingTeamId).name} starts` : "Roll to create team order"}
               </p>
-              <button className="mt-5 rounded-xl bg-amber-400 px-6 py-3 font-black text-slate-950 hover:bg-amber-300 disabled:opacity-50" disabled={isRolling} onClick={rollDice} type="button">
-                {isRolling ? "Rolling..." : game.startingTeamId ? "Roll again" : "Roll dice"}
-              </button>
+              {!game.startingTeamId && (
+                <button className="mt-5 rounded-xl bg-amber-400 px-6 py-3 font-black text-slate-950 hover:bg-amber-300 disabled:opacity-50" disabled={isRolling} onClick={rollDice} type="button">
+                  {isRolling ? "Rolling..." : "Roll dice"}
+                </button>
+              )}
             </div>
           </div>
         </section>

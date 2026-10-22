@@ -79,6 +79,14 @@ function getMockCategories(count) {
   return [...new Set(MOCK_QUESTIONS.map((question) => question.category))].slice(0, count);
 }
 
+function getDifficultyLabel(difficulty) {
+  const normalizedDifficulty = difficulty?.trim().toLowerCase();
+
+  if (normalizedDifficulty === "hard") return "Difficult";
+  if (normalizedDifficulty === "difficult") return "Difficult";
+  return "Easy";
+}
+
 export async function fetchRandomCategories(count = 3) {
   try {
     if (!supabase) return getMockCategories(count);
@@ -161,7 +169,14 @@ export async function fetchQuestionsForGame(count) {
         .map((row) => [row.id, row]),
     ).values()];
 
-    const formattedQuestions = shuffle(uniqueRows)
+    const challengingRows = uniqueRows.filter((row) => ["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)));
+    const otherRows = uniqueRows.filter((row) => !["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)));
+    const shuffledChallengingRows = shuffle(challengingRows);
+    const prioritizedRows = challengingRows.length > 0
+      ? [shuffledChallengingRows[0], ...shuffle(otherRows), ...shuffledChallengingRows.slice(1)]
+      : shuffle(otherRows);
+
+    const formattedQuestions = prioritizedRows
       .map(formatQuestionForGame)
       .filter((question, index, questions) =>
         questions.findIndex((candidate) => candidate.id === question.id) === index,
@@ -209,6 +224,8 @@ export function formatQuestionForGame(rawQuestion) {
     return {
       id: rawQuestion.id,
       category: rawQuestion.category,
+      difficulty: rawQuestion.difficulty,
+      difficultyLabel: getDifficultyLabel(rawQuestion.difficulty),
       questionText: rawQuestion.question_text,
       options,
       correctAnswerIndex: options.indexOf(rawQuestion.correct_answer),
@@ -238,6 +255,8 @@ function formatQuestionForGameWithoutFallback(rawQuestion) {
   return {
     id: rawQuestion.id,
     category: rawQuestion.category,
+    difficulty: rawQuestion.difficulty,
+    difficultyLabel: getDifficultyLabel(rawQuestion.difficulty),
     questionText: rawQuestion.question_text,
     options,
     correctAnswerIndex: options.indexOf(rawQuestion.correct_answer),
