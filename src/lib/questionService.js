@@ -156,27 +156,45 @@ export async function fetchQuestionsForGame(count) {
         .map(formatQuestionForGame);
     }
 
-    const { data, error } = await supabase
-      .from("questions")
-      .select("*")
-      .limit(Math.max(count * 5, 1000));
+    const pageSize = 1000;
+    const rows = [];
+    let offset = 0;
 
-    if (error) throw error;
+    while (true) {
+      const { data, error } = await supabase
+        .from("questions")
+        .select("*")
+        .range(offset, offset + pageSize - 1);
+
+      if (error) throw error;
+      rows.push(...(data || []));
+
+      if (!data || data.length < pageSize) break;
+      offset += pageSize;
+    }
 
     const uniqueRows = [...new Map(
-      (data || [])
+      rows
         .filter((row) => row.id && row.question_text)
         .map((row) => [row.id, row]),
     ).values()];
 
-    const challengingRows = uniqueRows.filter((row) => ["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)));
-    const otherRows = uniqueRows.filter((row) => !["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)));
-    const shuffledChallengingRows = shuffle(challengingRows);
-    const prioritizedRows = challengingRows.length > 0
-      ? [shuffledChallengingRows[0], ...shuffle(otherRows), ...shuffledChallengingRows.slice(1)]
-      : shuffle(otherRows);
+    const challengingRows = uniqueRows.filter((row) =>
+      ["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)),
+    );
+    let selectedRows = shuffle(uniqueRows).slice(0, count);
 
-    const formattedQuestions = prioritizedRows
+    if (
+      challengingRows.length > 0 &&
+      !selectedRows.some((row) => ["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)))
+    ) {
+      selectedRows = [
+        shuffle(challengingRows)[0],
+        ...selectedRows.slice(1),
+      ];
+    }
+
+    const formattedQuestions = shuffle(selectedRows)
       .map(formatQuestionForGame)
       .filter((question, index, questions) =>
         questions.findIndex((candidate) => candidate.id === question.id) === index,

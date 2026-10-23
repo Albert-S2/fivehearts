@@ -10,8 +10,6 @@ const COLORS = [
   "ruby", "coral", "sun", "lime", "forest", "ocean", "sky", "violet", "fuchsia", "slate",
 ];
 
-const QUESTION_COUNTS = [5, 20, 40, 60];
-
 export default function BattleSetup() {
   const router = useRouter();
   const [teamCount, setTeamCount] = useState(3);
@@ -61,8 +59,12 @@ export default function BattleSetup() {
       timeLimit,
       startingTeamId: null,
       answeringTeamId: null,
+      lastAnsweringTeamId: null,
+      excludedTeamId: null,
       turnOrder: [],
       questionNumber: 1,
+      selfSelectionTeamId: null,
+      selfSelectionCount: 0,
       lastTransition: "Roll the dice to create the team order.",
     });
     setIsCreatingBattle(false);
@@ -120,23 +122,29 @@ export default function BattleSetup() {
             </section>
 
             <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-              <h2 className="text-lg font-black">Questions in the game</h2>
-              <div className="mt-5 grid grid-cols-3 gap-3">
-                {QUESTION_COUNTS.map((count) => (
-                  <button
-                    className={`rounded-xl border px-4 py-4 font-black transition ${
-                      questionCount === count
-                        ? "border-amber-400 bg-amber-400 text-slate-950"
-                        : "border-slate-700 bg-slate-800 text-slate-200 hover:border-amber-400"
-                    }`}
-                    key={count}
-                    onClick={() => setQuestionCount(count)}
-                    type="button"
-                  >
-                    {count}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg font-black">Questions in the game</h2>
+                <span className="rounded-full bg-amber-400 px-4 py-2 text-xl font-black text-slate-950">
+                  {questionCount}
+                </span>
               </div>
+              <label className="mt-6 block">
+                <span className="sr-only">Number of questions</span>
+                <input
+                  aria-label="Number of questions"
+                  className="w-full accent-amber-400"
+                  max="100"
+                  min="10"
+                  onChange={(event) => setQuestionCount(Number(event.target.value))}
+                  step="1"
+                  type="range"
+                  value={questionCount}
+                />
+                <span className="mt-2 flex justify-between text-xs font-bold text-slate-500">
+                  <span>10 questions</span>
+                  <span>100 questions</span>
+                </span>
+              </label>
             </section>
 
             <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
@@ -305,7 +313,7 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
         </div>
       </div>
         {turnOrder.length > 0 && (
-          <p className={`${questionCompact ? "mt-1.5 pt-1.5 text-[9px]" : "mt-3 pt-3 text-xs"} border-t border-slate-800 font-bold uppercase tracking-[0.16em] text-slate-500`}>
+          <p className={`${questionCompact ? "mt-2 pt-2 text-xs" : "mt-3 pt-3 text-sm"} border-t border-slate-800 font-bold uppercase tracking-[0.12em] text-slate-300`}>
             <span className="text-amber-300">Route:</span> {lastTransition}
           </p>
         )}
@@ -403,17 +411,23 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
 
     const timer = window.setInterval(() => {
       setSecondsLeft((seconds) => {
-        if (seconds <= 1) {
-          window.clearInterval(timer);
-          resolveAnswerRef.current?.(false, true);
-          return 0;
-        }
-        return seconds - 1;
+        return Math.max(seconds - 1, 0);
       });
     }, 1000);
 
     return () => window.clearInterval(timer);
   }, [game.phase, game.timeLimit, answerResult]);
+
+  useEffect(() => {
+    if (
+      game.phase === "question"
+      && game.timeLimit !== null
+      && secondsLeft === 0
+      && !answerResult
+    ) {
+      resolveAnswerRef.current?.(false, true);
+    }
+  }, [answerResult, game.phase, game.timeLimit, secondsLeft]);
 
   const resolveAnswer = useCallback((isCorrect, timedOut = false) => {
     if (answerResult) return;
@@ -457,6 +471,12 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
   }, [resolveAnswer]);
 
   function chooseAnsweringTeam(teamId) {
+    const isSelfSelection = teamId === game.startingTeamId;
+    const cannotSelfSelectAgain = isSelfSelection
+      && game.selfSelectionTeamId === teamId
+      && game.selfSelectionCount >= 1;
+    if (teamId === game.excludedTeamId || cannotSelfSelectAgain) return;
+
     setSecondsLeft(game.timeLimit ?? 60);
     setSelectedAnswer(null);
     setAnswerResult(null);
@@ -464,35 +484,41 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     setIsFeedbackReady(false);
     const nextQuestion = game.questions[game.questionNumber - 1];
     setVisibleAnswers(nextQuestion.options);
-    onUpdate({ ...game, phase: "question", answeringTeamId: teamId });
+    onUpdate({
+      ...game,
+      phase: "question",
+      answeringTeamId: teamId,
+      selfSelectionTeamId: isSelfSelection ? teamId : null,
+      selfSelectionCount: isSelfSelection ? game.selfSelectionCount + 1 : 0,
+    });
   }
 
 
   function moveToNextQuestion() {
-    const currentOrderIndex = game.turnOrder.indexOf(game.answeringTeamId);
-    const orderedCandidates = game.turnOrder.length
-      ? game.turnOrder.map((teamId, index) => ({
-        teamId,
-        index,
-      }))
-      : [];
-    const nextCandidate = orderedCandidates
-      .map((candidate, offset) => ({
-        ...candidate,
-        offset: (candidate.index - currentOrderIndex + game.turnOrder.length) % game.turnOrder.length || game.turnOrder.length,
-        order: offset,
-      }))
-      .sort((first, second) => first.offset - second.offset)
-      .find((candidate) => game.teams.find((team) => team.id === candidate.teamId)?.hearts > 0);
-    const nextTeamId = nextCandidate?.teamId || game.teams.find((team) => team.hearts > 0)?.id;
+    const answeringTeam = game.teams.find((team) => team.id === game.answeringTeamId);
+    const answeredCorrectly = answerResult?.isCorrect;
+    const nextControllerId = answeredCorrectly
+      ? game.answeringTeamId
+      : game.startingTeamId;
+    const nextController = game.teams.find(
+      (team) => team.id === nextControllerId && team.hearts > 0,
+    );
+    const fallbackController = game.teams.find(
+      (team) => team.hearts > 0 && team.id !== game.answeringTeamId,
+    );
+    const nextTeamId = nextController?.id || fallbackController?.id;
+    const excludedTeamId = answeredCorrectly ? null : game.answeringTeamId;
 
     onUpdate({
       ...game,
       phase: game.questionNumber >= game.questionCount || game.allTeamsEliminated ? "victory" : "decision",
       startingTeamId: nextTeamId,
       answeringTeamId: null,
+      excludedTeamId,
       questionNumber: game.questionNumber + 1,
-      lastTransition: `${game.teams.find((team) => team.id === game.answeringTeamId)?.name} was incorrect. Original order advances to ${game.teams.find((team) => team.id === nextTeamId)?.name}.`,
+      lastTransition: answeredCorrectly
+        ? `${answeringTeam?.name} answered correctly and now chooses who answers next.`
+        : `${answeringTeam?.name} was incorrect. ${game.teams.find((team) => team.id === nextTeamId)?.name} chooses next, but cannot select ${answeringTeam?.name}.`,
     });
     setSelectedAnswer(null);
     setAnswerResult(null);
@@ -536,6 +562,11 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     const answeringTeam = game.teams.find((team) => team.id === game.answeringTeamId);
 
     if (game.phase === "decision") {
+      const availableAnsweringTeams = game.teams.filter(
+        (team) => team.hearts > 0 && team.id !== game.excludedTeamId,
+      );
+      const cannotSelfSelect = game.selfSelectionTeamId === game.startingTeamId
+        && game.selfSelectionCount >= 1;
       return (
         <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
           <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
@@ -555,15 +586,17 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
                 {startingTeam?.name}, choose who will answer this question.
               </p>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                <button
-                  className="rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300"
-                  onClick={() => chooseAnsweringTeam(game.startingTeamId)}
-                  type="button"
-                >
-                  {startingTeam?.name} will answer
-                </button>
+                {!cannotSelfSelect && (
+                  <button
+                    className="rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300"
+                    onClick={() => chooseAnsweringTeam(game.startingTeamId)}
+                    type="button"
+                  >
+                    {startingTeam?.name} will answer
+                  </button>
+                )}
                 {game.teams
-                  .filter((team) => team.id !== game.startingTeamId && team.hearts > 0)
+                  .filter((team) => team.id !== game.startingTeamId && team.hearts > 0 && team.id !== game.excludedTeamId)
                   .map((team) => (
                     <button
                       className="rounded-xl border border-slate-600 bg-slate-800 px-5 py-4 font-bold text-white hover:border-amber-400 hover:text-amber-300"
@@ -621,34 +654,52 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
               </button>
             ))}
           </div>
-          <p className="mt-8 text-center text-slate-400">
-            {answerResult?.timedOut
-              ? `${answeringTeam?.name} ran out of time. One heart is lost.`
-              : answerResult?.isCorrect
-                ? `${answeringTeam?.name} is correct and earns ${["Hard", "Difficult"].includes(activeQuestion?.difficultyLabel) ? 20 : 10} points!`
-                : `${answeringTeam?.name} is incorrect. One heart is lost.`}
-          </p>
-          {answerResult && activeQuestion?.explanation && (
-            <div className="mt-6 rounded-2xl border border-sky-400/30 bg-sky-400/10 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-300">Explanation</p>
-              <p className="mt-2 leading-7 text-slate-200">{activeQuestion.explanation}</p>
-            </div>
-          )}
-          {answerResult && (
-            <button
-              className="mt-6 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-50"
-              disabled={!isFeedbackReady}
-              onClick={moveToNextQuestion}
-              type="button"
-            >
-              {!isFeedbackReady
-                ? "Revealing answer..."
-                : game.questionNumber >= game.questionCount
-                  ? "See results"
-                  : "Next question"}
-            </button>
-          )}
         </div>
+        {answerResult && isFeedbackReady && (
+          <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/80 p-6 backdrop-blur-sm">
+            <section
+              aria-labelledby="answer-result-title"
+              aria-modal="true"
+              className={`w-full max-w-xl rounded-3xl border-4 p-8 text-center shadow-2xl ${
+                answerResult.isCorrect
+                  ? "border-emerald-400 bg-emerald-950"
+                  : "border-red-400 bg-red-950"
+              }`}
+              role="dialog"
+            >
+              <p className={`text-sm font-black uppercase tracking-[0.3em] ${answerResult.isCorrect ? "text-emerald-300" : "text-red-300"}`}>
+                {answerResult.isCorrect ? "Correct" : "Wrong answer"}
+              </p>
+              <h2 className="mt-4 text-3xl font-black text-white" id="answer-result-title">
+                {answerResult.isCorrect
+                  ? `${answeringTeam?.name} is correct and earns ${["Hard", "Difficult"].includes(activeQuestion?.difficultyLabel) ? 20 : 10} points!`
+                  : answerResult.timedOut
+                    ? `${answeringTeam?.name} ran out of time and loses 1 heart.`
+                    : `${answeringTeam?.name} loses 1 heart.`}
+              </h2>
+              {!answerResult.isCorrect && (
+                <div className="mt-6 rounded-2xl border border-emerald-400/40 bg-emerald-400/10 p-4 text-left">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">
+                    Correct answer
+                  </p>
+                  <p className="mt-2 text-xl font-black text-emerald-100">
+                    {activeQuestion?.options?.[activeQuestion.correctAnswerIndex]}
+                  </p>
+                </div>
+              )}
+              {activeQuestion?.explanation && (
+                <p className="mt-5 text-lg leading-8 text-slate-200">{activeQuestion.explanation}</p>
+              )}
+              <button
+                className="mt-8 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300"
+                onClick={moveToNextQuestion}
+                type="button"
+              >
+                {game.questionNumber >= game.questionCount ? "See results" : "Next question"}
+              </button>
+            </section>
+          </div>
+        )}
       </main>
     );
   }
