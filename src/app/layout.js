@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-950">
+      <body className="min-h-full bg-white text-slate-900">
         <Script
           async
           crossOrigin="anonymous"
@@ -45,7 +45,7 @@ export default function RootLayout({ children }) {
             </div>
           </aside>
         </div>
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex h-[50px] items-center justify-center border-t border-slate-700 bg-slate-900/90 px-2 backdrop-blur lg:h-[90px]">
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex h-[50px] items-center justify-center border-t border-emerald-100 bg-white/95 px-2 shadow-[0_-4px_16px_rgb(38_50_56_/_0.1)] backdrop-blur lg:h-[90px]">
           <div className="block h-[50px] w-[320px] lg:hidden">
             <AdContainer
               className="h-[50px] w-[320px]"
