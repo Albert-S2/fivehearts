@@ -2,14 +2,14 @@
 
 export default function ClassyBackground({ children }) {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-slate-950 text-slate-100">
+    <div className="relative min-h-screen w-full overflow-hidden bg-ink-blue text-slate-100">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-40 -top-40 h-[600px] w-[600px] animate-pulse rounded-full bg-indigo-900/30 blur-[120px] will-change-transform"
+        className="pointer-events-none absolute -left-40 -top-40 h-[600px] w-[600px] animate-pulse rounded-full bg-forest-sage/30 blur-[120px] will-change-transform"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-40 -right-40 h-[600px] w-[600px] animate-pulse rounded-full bg-amber-600/15 blur-[140px] [animation-delay:2s] will-change-transform"
+        className="pointer-events-none absolute -bottom-40 -right-40 h-[600px] w-[600px] animate-pulse rounded-full bg-brass/15 blur-[140px] [animation-delay:2s] will-change-transform"
       />
       <div
         aria-hidden="true"

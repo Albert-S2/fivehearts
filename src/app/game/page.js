@@ -47,16 +47,16 @@ export default function GamePage() {
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {MODES.map((mode) => (
               <Link
-                className={`group rounded-3xl border border-slate-700 bg-gradient-to-br ${mode.accent} to-slate-900 p-7 text-left transition hover:-translate-y-1 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-950/30`}
+                className={`boutique-card group border-stone-200/60 bg-gradient-to-br ${mode.accent} to-white p-7 text-left`}
                 key={mode.id}
                 href={`/game/${mode.id}`}
               >
-                <span className="grid h-16 w-16 place-items-center rounded-2xl bg-amber-400 text-3xl font-black text-slate-950">
+                <span className="grid h-16 w-16 place-items-center rounded-2xl bg-brass text-3xl font-black text-ink-blue shadow-[inset_0_-4px_0_rgb(154_107_45_/_0.3)]">
                   {mode.icon}
                 </span>
-                <h2 className="mt-8 text-3xl font-black group-hover:text-amber-300">{mode.name}</h2>
+                <h2 className="mt-8 text-3xl font-black group-hover:text-terracotta">{mode.name}</h2>
                 <p className="mt-3 min-h-14 leading-7 text-slate-400">{mode.description}</p>
-                <span className="mt-7 inline-block font-black text-amber-300">Choose {mode.name} →</span>
+                <span className="mt-7 inline-block font-black text-terracotta">Choose {mode.name} →</span>
               </Link>
             ))}
           </div>

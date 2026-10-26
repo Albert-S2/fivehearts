@@ -1,16 +1,14 @@
 "use client";
 
 export const TEAM_COLOR_CONFIG = {
-  ruby: { name: "Ruby", surface: "bg-rose-950", border: "border-rose-400", active: "ring-rose-400", swatch: "bg-rose-500" },
-  coral: { name: "Coral", surface: "bg-orange-950", border: "border-orange-400", active: "ring-orange-400", swatch: "bg-orange-500" },
-  sun: { name: "Sun", surface: "bg-amber-950", border: "border-amber-400", active: "ring-amber-400", swatch: "bg-amber-400" },
-  lime: { name: "Lime", surface: "bg-lime-950", border: "border-lime-400", active: "ring-lime-400", swatch: "bg-lime-400" },
-  forest: { name: "Forest", surface: "bg-emerald-950", border: "border-emerald-400", active: "ring-emerald-400", swatch: "bg-emerald-500" },
-  ocean: { name: "Ocean", surface: "bg-cyan-950", border: "border-cyan-400", active: "ring-cyan-400", swatch: "bg-cyan-400" },
-  sky: { name: "Sky", surface: "bg-sky-950", border: "border-sky-400", active: "ring-sky-400", swatch: "bg-sky-400" },
-  violet: { name: "Violet", surface: "bg-violet-950", border: "border-violet-400", active: "ring-violet-400", swatch: "bg-violet-500" },
-  fuchsia: { name: "Fuchsia", surface: "bg-fuchsia-950", border: "border-fuchsia-400", active: "ring-fuchsia-400", swatch: "bg-fuchsia-500" },
-  slate: { name: "Slate", surface: "bg-slate-800", border: "border-slate-300", active: "ring-slate-300", swatch: "bg-slate-400" },
+  ruby: { name: "Rose", surface: "bg-player-coral", border: "border-player-coral", active: "ring-player-coral", swatch: "bg-player-coral" },
+  sun: { name: "Butter", surface: "bg-player-gold", border: "border-player-gold", active: "ring-player-gold", swatch: "bg-player-gold" },
+  forest: { name: "Mint", surface: "bg-player-forest", border: "border-player-forest", active: "ring-player-forest", swatch: "bg-player-forest" },
+  ocean: { name: "Powder Blue", surface: "bg-player-slate", border: "border-player-slate", active: "ring-player-slate", swatch: "bg-player-slate" },
+  sky: { name: "Periwinkle", surface: "bg-ink-blue/20", border: "border-ink-blue", active: "ring-ink-blue", swatch: "bg-ink-blue/20" },
+  violet: { name: "Lilac", surface: "bg-player-plum", border: "border-player-plum", active: "ring-player-plum", swatch: "bg-player-plum" },
+  fuchsia: { name: "Lavender", surface: "bg-player-plum/70", border: "border-player-plum", active: "ring-player-plum", swatch: "bg-player-plum/70" },
+  slate: { name: "Cloud", surface: "bg-player-slate/70", border: "border-player-slate", active: "ring-player-slate", swatch: "bg-player-slate/70" },
 };
 
 function Heart({ active }) {
@@ -39,9 +37,9 @@ export default function HybridScienceCard({
 
   return (
     <article
-      className={`relative min-h-24 w-full ${extraCompact ? "max-w-[280px]" : compact ? "max-w-[360px]" : "max-w-[520px]"} overflow-hidden rounded-3xl border-4 ${config.surface} shadow-2xl transition-all duration-300 ${config.border} ${isActiveTurn ? `scale-105 animate-pulse ring-4 ${config.active}` : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
+      className={`relative min-h-24 w-full ${extraCompact ? "max-w-[280px]" : compact ? "max-w-[360px]" : "max-w-[520px]"} overflow-hidden rounded-xl border ${config.surface} shadow-md transition-all duration-300 ease-out ${config.border} ${isActiveTurn ? `scale-105 ring-4 ${config.active}` : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-transparent to-ink-blue/5" />
       <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center p-2">
         <div className="flex gap-0.5" aria-label={`${hearts} of 5 hearts remaining`}>
           {Array.from({ length: 5 }, (_, index) => (
@@ -51,15 +49,15 @@ export default function HybridScienceCard({
       </div>
 
       <div className="absolute inset-y-0 right-0 z-10 flex items-center p-4">
-        <p className={`${extraCompact ? "text-base" : compact ? "text-lg" : "text-2xl"} font-black text-amber-400`}>{points}</p>
+        <p className={`${extraCompact ? "text-base" : compact ? "text-lg" : "text-2xl"} font-black text-brass`}>{points}</p>
       </div>
       <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-3 pt-8 text-center">
-        <h2 className={`truncate ${extraCompact ? "text-xs" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-white`}>{teamName}</h2>
+        <h2 className={`truncate ${extraCompact ? "text-xs" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-ink-blue`}>{teamName}</h2>
       </div>
 
       {isEliminated && (
         <div className="absolute inset-0 z-20 grid place-items-center">
-          <span className="rotate-[-8deg] border-4 border-rose-500 bg-slate-950/90 px-4 py-2 text-xl font-black tracking-widest text-rose-400">
+          <span className="rotate-[-8deg] border-2 border-terracotta bg-ink-blue/90 px-4 py-2 text-xl font-black tracking-widest text-parchment">
             ELIMINATED
           </span>
         </div>
