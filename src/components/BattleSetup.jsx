@@ -7,7 +7,7 @@ import HybridScienceCard, { TEAM_COLOR_CONFIG } from "./HybridScienceCard";
 import { fetchQuestionsForGame } from "../lib/questionService";
 
 const COLORS = [
-  "ruby", "coral", "sun", "lime", "forest", "ocean", "sky", "violet", "fuchsia", "slate",
+  "ruby", "sun", "forest", "ocean", "sky", "violet", "fuchsia", "slate",
 ];
 
 export default function BattleSetup() {
@@ -635,13 +635,13 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             {visibleAnswers.map((answer, index) => (
               <button
-                className={`rounded-2xl border p-5 text-left text-lg font-bold ${
+                className={`rounded-2xl border p-5 text-left text-lg font-bold transition-all duration-300 ease-out ${
                   answerResult && index === activeQuestion.correctAnswerIndex && isCorrectAnswerRevealed
-                    ? "border-emerald-400 bg-emerald-400/20 text-emerald-100"
+                      ? "answer-correct border-brass bg-brass/20 text-ink-blue"
                     : selectedAnswer === index && answerResult && !answerResult.isCorrect
-                      ? "border-red-400 bg-red-400/20 text-red-100"
+                        ? "answer-incorrect border-terracotta bg-terracotta/20 text-ink-blue"
                       : selectedAnswer === index && answerResult?.isCorrect
-                        ? "border-emerald-400 bg-emerald-400/20 text-emerald-100"
+                          ? "answer-correct border-brass bg-brass/20 text-ink-blue"
                         : "border-slate-700 bg-slate-900 hover:border-amber-400"
                 }`}
                 disabled={Boolean(answerResult)}
