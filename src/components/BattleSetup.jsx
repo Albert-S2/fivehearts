@@ -7,16 +7,56 @@ import HybridScienceCard, { TEAM_COLOR_CONFIG } from "./HybridScienceCard";
 import { fetchQuestionsForGame } from "../lib/questionService";
 
 const TEAM_COLORS = ["red", "blue", "green", "yellow", "purple"];
+const RULES = [
+  {
+    icon: "♥",
+    eyebrow: "The objective",
+    title: "Protect your five hearts",
+    body: "Every team starts with five hearts. The team with the most points among the survivors wins the battle.",
+    accent: "from-rose-500 to-fuchsia-500",
+  },
+  {
+    icon: "Ⅱ",
+    eyebrow: "Your turn",
+    title: "A team can answer twice",
+    body: "The team chosen to answer gets the question. If they are correct, they keep control and can choose who answers next.",
+    accent: "from-cyan-400 to-blue-500",
+  },
+  {
+    icon: "✦",
+    eyebrow: "Correct answer",
+    title: "Keep the momentum",
+    body: "A correct answer earns points and lets that team decide who takes the next question—including themselves once.",
+    accent: "from-emerald-400 to-cyan-400",
+  },
+  {
+    icon: "×",
+    eyebrow: "Wrong answer",
+    title: "Lose a heart, change control",
+    body: "An incorrect answer costs one heart. The original choosing team controls the next selection, but cannot pick the team that missed.",
+    accent: "from-orange-400 to-rose-500",
+  },
+  {
+    icon: "★",
+    eyebrow: "Score the win",
+    title: "Easy points, bigger rewards",
+    body: "Standard questions are worth 10 points. Difficult questions are worth 20. Survive, score, and take the crown.",
+    accent: "from-fuchsia-400 to-violet-500",
+  },
+];
 
 export default function BattleSetup() {
   const router = useRouter();
   const [teamCount, setTeamCount] = useState(3);
-  const [questionCount, setQuestionCount] = useState(20);
+  const [questionCount, setQuestionCount] = useState(30);
   const [timeLimit, setTimeLimit] = useState(60);
   const [teamColors, setTeamColors] = useState(["red", "blue", "yellow"]);
   const [teamNames, setTeamNames] = useState(["Team 1", "Team 2", "Team 3"]);
   const [game, setGame] = useState(null);
   const [isCreatingBattle, setIsCreatingBattle] = useState(false);
+  const [showRules, setShowRules] = useState(true);
+  const [ruleIndex, setRuleIndex] = useState(0);
+  const [setupStep, setSetupStep] = useState("settings");
 
   function updateTeamCount(count) {
     setTeamCount(count);
@@ -81,8 +121,83 @@ export default function BattleSetup() {
     );
   }
 
+  if (showRules) {
+    const rule = RULES[ruleIndex];
+    const isLastRule = ruleIndex === RULES.length - 1;
+    return (
+      <main className="arcade-shell arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] px-5 py-5 text-white sm:px-8">
+        <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
+        <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
+        <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
+        <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
+          <header className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
+            <Link className="text-sm font-semibold text-slate-400 transition-colors hover:text-cyan-300" href="/game">
+              ← Back to modes
+            </Link>
+            <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+              How to play
+            </span>
+          </header>
+
+          <section className="flex min-h-0 flex-1 flex-col items-center justify-center py-8 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">
+              Five Hearts Quiz · Battle
+            </p>
+            <h1 className="mt-3 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-6xl">
+              Know the play
+            </h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+              Five quick cards to get everyone ready before the first question.
+            </p>
+
+            <article className="mt-7 w-full max-w-xl rounded-2xl border border-slate-700/60 bg-slate-900/80 p-7 text-left shadow-2xl shadow-fuchsia-950/20 backdrop-blur-xl sm:p-9">
+              <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${rule.accent} text-3xl font-black text-white shadow-lg`}>
+                {rule.icon}
+              </div>
+              <p className="mt-7 text-xs font-bold uppercase tracking-[0.28em] text-cyan-300">{rule.eyebrow}</p>
+              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">{rule.title}</h2>
+              <p className="mt-4 text-base leading-7 text-slate-300">{rule.body}</p>
+            </article>
+
+            <div className="mt-6 flex items-center gap-2" aria-label={`Rule ${ruleIndex + 1} of ${RULES.length}`}>
+              {RULES.map((item, index) => (
+                <span
+                  className={`h-2 rounded-full transition-all duration-300 ${index === ruleIndex ? "w-8 bg-cyan-400 shadow-[0_0_12px_rgb(34_211_238_/_0.7)]" : "w-2 bg-slate-700"}`}
+                  key={item.title}
+                />
+              ))}
+            </div>
+
+            <div className="mt-6 flex w-full max-w-xl items-center justify-between gap-4">
+              <button
+                className="text-sm font-bold text-slate-400 transition-colors hover:text-white"
+                onClick={() => setShowRules(false)}
+                type="button"
+              >
+                Skip rules
+              </button>
+              <button
+                className="arcade-launch-button rounded-xl px-7 py-3 text-sm font-extrabold"
+                onClick={() => {
+                  if (isLastRule) {
+                    setShowRules(false);
+                  } else {
+                    setRuleIndex((index) => index + 1);
+                  }
+                }}
+                type="button"
+              >
+                {isLastRule ? "Set up battle →" : "Next rule →"}
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="arcade-shell arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] px-5 py-4 text-white sm:px-8">
+    <main className="arcade-shell arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] px-5 py-4 pb-20 text-white sm:px-8 lg:pb-[110px]">
       <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
@@ -91,23 +206,28 @@ export default function BattleSetup() {
           ← Back to modes
         </Link>
 
-        <header className="mt-4 shrink-0">
+        <header className="mt-3 shrink-0">
           <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Five Hearts Quiz · Battle</p>
-          <h1 className="mt-2 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-5xl">Set up your battle</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-5 text-slate-400">
-            Choose the match rules, team names, and a unique color for each team.
+          <h1 className="mt-1 bg-gradient-to-r from-cyan-400 to-fuchsia-400 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent sm:text-3xl">
+            {setupStep === "settings" ? "Set the table" : "Name your teams"}
+          </h1>
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400 sm:text-sm">
+            {setupStep === "settings"
+              ? "Choose the shape of your battle before inviting teams to the table."
+              : "Give each team a name, then start the game when everyone is ready."}
           </p>
         </header>
 
-        <div className="mt-4 grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:grid-rows-[auto_1fr] lg:items-start">
-          <div className="grid gap-3 sm:grid-cols-3 lg:contents">
-            <section className="arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-1">
-              <h2 className="text-lg font-black">Number of teams</h2>
-              <p className="mt-1 text-sm text-slate-500">Battle supports three to five teams.</p>
-              <div className="mt-3 grid grid-cols-3 gap-2">
+        {setupStep === "settings" ? (
+        <div className="mt-6 grid min-h-0 flex-1 content-center gap-4 pb-20 sm:grid-cols-3 lg:pb-[110px]">
+          <div className="contents">
+            <section className="arcade-panel min-w-0 rounded-2xl border border-slate-700/60 bg-slate-900/80 p-3 backdrop-blur-xl sm:min-h-[210px] sm:p-5">
+              <h2 className="flex min-h-8 items-center text-base font-black">Number of teams</h2>
+              <p className="mt-2 min-h-10 text-xs leading-5 text-slate-400">Choose three to five teams.</p>
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 {[3, 4, 5].map((count) => (
                   <button
-                    className={`rounded-xl border px-3 py-3 text-lg font-black transition ${
+                    className={`rounded-xl border px-2 py-3 text-base font-black transition sm:px-3 sm:text-lg ${
                       teamCount === count
                         ? "border-amber-400 bg-amber-400 text-slate-950"
                         : "border-slate-700 bg-slate-800 text-slate-200 hover:border-amber-400"
@@ -122,14 +242,17 @@ export default function BattleSetup() {
               </div>
             </section>
 
-            <section className="arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-1">
-              <div className="flex items-center justify-between gap-4">
-                <h2 className="text-lg font-black">Questions in the game</h2>
-                <span className="rounded-full bg-amber-400 px-4 py-2 text-xl font-black text-slate-950">
+            <section className="arcade-panel min-w-0 rounded-2xl border border-slate-700/60 bg-slate-900/80 p-3 backdrop-blur-xl sm:min-h-[210px] sm:p-5">
+              <div className="flex min-h-8 items-center justify-between gap-4">
+                <h2 className="text-base font-black">Questions in the game</h2>
+                <span className="rounded-full bg-amber-400 px-3 py-1 text-lg font-black text-slate-950">
                   {questionCount}
                 </span>
               </div>
-              <label className="mt-3 block">
+              <p className="mt-2 min-h-10 text-xs leading-5 text-slate-400">
+                Choose how many questions your group will play.
+              </p>
+              <label className="mt-4 block">
                 <span className="sr-only">Number of questions</span>
                 <input
                   aria-label="Number of questions"
@@ -141,19 +264,22 @@ export default function BattleSetup() {
                   type="range"
                   value={questionCount}
                 />
-                <span className="mt-2 flex justify-between text-xs font-bold text-slate-500">
+                <span className="mt-1 flex justify-between text-[10px] font-bold text-slate-500">
                   <span>10 questions</span>
                   <span>100 questions</span>
                 </span>
               </label>
             </section>
 
-            <section className="arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-1">
-              <h2 className="text-lg font-black">Time limit per question</h2>
-              <div className="mt-3 grid grid-cols-2 gap-2">
+            <section className="arcade-panel min-w-0 rounded-2xl border border-slate-700/60 bg-slate-900/80 p-3 backdrop-blur-xl sm:min-h-[210px] sm:p-5">
+              <h2 className="flex min-h-8 items-center text-base font-black">Time limit</h2>
+              <p className="mt-2 min-h-10 text-xs leading-5 text-slate-400">
+                Set the time each team gets to answer.
+              </p>
+              <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[{ label: "60 seconds", value: 60 }, { label: "No limit", value: null }].map((option) => (
                   <button
-                    className={`rounded-xl border px-3 py-3 text-sm font-bold transition ${
+                    className={`rounded-xl border px-2 py-3 text-[10px] font-bold transition sm:px-3 sm:text-xs ${
                       timeLimit === option.value
                         ? "border-amber-400 bg-amber-400 text-slate-950"
                         : "border-slate-700 bg-slate-800 text-slate-200 hover:border-amber-400"
@@ -167,36 +293,47 @@ export default function BattleSetup() {
                 ))}
               </div>
             </section>
+          </div>
 
-            <section className="setup-teams arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-2 lg:row-span-2 lg:row-start-1">
-              <h2 className="text-lg font-black">Set team names and colors</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Every team has a preallocated color that follows them throughout the game.
-              </p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {Array.from({ length: teamCount }, (_, teamIndex) => {
-                  const selectedColor = teamColors[teamIndex];
-                  const selectedTeamColor = TEAM_COLOR_CONFIG[selectedColor];
-                  return (
-                    <div className={`rounded-xl border-l-4 ${selectedTeamColor.border} ${selectedTeamColor.surface}/10 p-3`} key={teamIndex}>
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className={`h-3 w-3 rounded-full ${selectedTeamColor.swatch} ring-2 ring-white`} />
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                              Team {teamIndex + 1}
-                            </p>
-                          </div>
-                          <p className={`mt-0.5 text-sm font-black ${selectedTeamColor.text}`}>{selectedTeamColor.name}</p>
-                        </div>
-                        <span className={`rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${selectedTeamColor.swatch} ${selectedTeamColor.text}`}>
-                          Selected
+          <button
+            className="arcade-launch-button rounded-xl px-5 py-3.5 font-extrabold sm:col-span-3 sm:mx-auto sm:w-80"
+            onClick={() => setSetupStep("teams")}
+            type="button"
+          >
+            Arrange teams →
+          </button>
+        </div>
+        ) : (
+          <div className="mt-5 flex min-h-0 flex-1 flex-col pb-20 lg:pb-[110px]">
+            <div className="flex min-h-0 flex-1 items-center gap-3 overflow-x-auto py-4">
+              {Array.from({ length: teamCount }, (_, teamIndex) => {
+                const selectedColor = teamColors[teamIndex];
+                const selectedTeamColor = TEAM_COLOR_CONFIG[selectedColor];
+                return (
+                  <div
+                    className="team-playing-card w-[150px] shrink-0 rounded-2xl border border-slate-700/60 p-4 shadow-lg shadow-black/20 sm:w-[170px]"
+                    key={teamIndex}
+                    style={{
+                      backgroundImage: `linear-gradient(160deg, ${selectedTeamColor.panel} 0%, ${selectedTeamColor.value}bb 100%)`,
+                    }}
+                  >
+                    <div className="flex min-h-[190px] flex-col justify-between gap-6">
+                      <div className="flex items-start justify-between gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="text-4xl font-black leading-none"
+                          style={{ color: selectedTeamColor.value }}
+                        >
+                          {selectedTeamColor.symbol}
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-300">
+                          Team {teamIndex + 1}
                         </span>
                       </div>
-                      <label className="mb-2 block">
+                      <label className="block">
                         <span className="sr-only">Team name</span>
                         <input
-                          className={`w-full rounded-lg border bg-slate-950 px-3 py-2 text-sm font-bold text-white outline-none transition placeholder:text-slate-600 focus:ring-2 ${selectedTeamColor.border} focus:ring-amber-400/20`}
+                          className={`w-full rounded-xl border border-slate-700/60 bg-slate-950/80 px-3 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:ring-2 ${selectedTeamColor.border} focus:ring-cyan-400/20`}
                           maxLength={10}
                           onChange={(event) => updateTeamName(teamIndex, event.target.value)}
                           placeholder={`Enter Team ${teamIndex + 1} name`}
@@ -205,21 +342,29 @@ export default function BattleSetup() {
                         />
                       </label>
                     </div>
-                  );
-                })}
-              </div>
-            </section>
+                  </div>
+                );
+              })}
+            </div>
+            <footer className="mt-5 flex shrink-0 flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                className="text-sm font-bold text-slate-400 transition-colors hover:text-white"
+                onClick={() => setSetupStep("settings")}
+                type="button"
+              >
+                ← Back to settings
+              </button>
+              <button
+                className="arcade-launch-button rounded-xl px-8 py-3.5 font-extrabold disabled:cursor-wait disabled:opacity-60"
+                disabled={isCreatingBattle}
+                onClick={createBattle}
+                type="button"
+              >
+                {isCreatingBattle ? "Loading questions..." : "Start the game"}
+              </button>
+            </footer>
           </div>
-
-          <button
-            className="arcade-launch-button w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-60 lg:col-span-2"
-            disabled={isCreatingBattle}
-            onClick={createBattle}
-            type="button"
-          >
-            {isCreatingBattle ? "Loading questions..." : "Create battle"}
-          </button>
-        </div>
+        )}
       </div>
     </main>
   );

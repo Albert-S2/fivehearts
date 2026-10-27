@@ -148,10 +148,15 @@ export async function fetchQuestionByCategory(categoryName) {
   }
 }
 
-export async function fetchQuestionsForGame(count) {
+export async function fetchQuestionsForGame(count, options = {}) {
+  const { difficulty = "Any difficulty" } = options;
+  const matchesFilters = (question) =>
+    difficulty === "Any difficulty" || getDifficultyLabel(question.difficulty) === difficulty;
+
   try {
     if (!supabase) {
-      return shuffle(MOCK_QUESTIONS)
+      const filteredQuestions = MOCK_QUESTIONS.filter(matchesFilters);
+      return shuffle(filteredQuestions.length ? filteredQuestions : MOCK_QUESTIONS)
         .slice(0, Math.min(count, MOCK_QUESTIONS.length))
         .map(formatQuestionForGame);
     }
@@ -178,11 +183,13 @@ export async function fetchQuestionsForGame(count) {
         .filter((row) => row.id && row.question_text)
         .map((row) => [row.id, row]),
     ).values()];
+    const filteredRows = uniqueRows.filter(matchesFilters);
+    const availableRows = filteredRows.length ? filteredRows : uniqueRows;
 
-    const challengingRows = uniqueRows.filter((row) =>
+    const challengingRows = availableRows.filter((row) =>
       ["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)),
     );
-    let selectedRows = shuffle(uniqueRows).slice(0, count);
+    let selectedRows = shuffle(availableRows).slice(0, count);
 
     if (
       challengingRows.length > 0 &&
