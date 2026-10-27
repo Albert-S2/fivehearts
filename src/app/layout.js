@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Game Room | Five Hearts",
+  title: "Five Hearts Quiz",
   description: "Choose a shared-screen game to play.",
 };
 
@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
               <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-left-sidebar" />
             </div>
           </aside>
-          <div className="min-w-0 pb-28">{children}</div>
+          <div className="min-w-0 pb-14 lg:pb-0">{children}</div>
           <aside className="z-20 hidden justify-center px-2 pt-8 md:flex">
             <div className="ad-frame sticky top-8 h-[300px]">
               <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-right-sidebar" />

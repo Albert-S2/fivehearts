@@ -8,7 +8,7 @@ const MODE_DETAILS = {
   },
   duel: {
     name: "Duel",
-    description: "A head-to-head Five Hearts match for two players.",
+    description: "A head-to-head Five Hearts Quiz match for two players.",
   },
   battle: {
     name: "Battle",
@@ -24,7 +24,7 @@ export default async function ModePage({ params = {} }) {
   const resolvedParams = await params;
   const mode = resolvedParams?.mode;
   const details = MODE_DETAILS[mode] || {
-    name: "Five Hearts",
+    name: "Five Hearts Quiz",
     description: "This game mode is not available yet.",
   };
 
@@ -40,7 +40,7 @@ export default async function ModePage({ params = {} }) {
           <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-amber-400 text-3xl font-black text-slate-950">
             5
           </span>
-          <p className="mt-8 text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · {details.name}</p>
+          <p className="mt-8 text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts Quiz · {details.name}</p>
           <h1 className="mt-4 text-4xl font-black">{details.name} setup</h1>
           <p className="mt-4 leading-7 text-slate-400">{details.description}</p>
           <div className="mt-8 rounded-2xl border border-dashed border-slate-700 px-5 py-6 text-sm text-slate-500">
