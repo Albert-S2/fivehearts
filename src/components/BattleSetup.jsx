@@ -6,9 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import HybridScienceCard, { TEAM_COLOR_CONFIG } from "./HybridScienceCard";
 import { fetchQuestionsForGame } from "../lib/questionService";
 
-const COLORS = [
-  "red", "blue", "green", "yellow", "purple",
-];
+const TEAM_COLORS = ["red", "blue", "green", "yellow", "purple"];
 
 export default function BattleSetup() {
   const router = useRouter();
@@ -22,7 +20,7 @@ export default function BattleSetup() {
 
   function updateTeamCount(count) {
     setTeamCount(count);
-    setTeamColors((colors) => Array.from({ length: count }, (_, index) => colors[index] || COLORS[index]));
+    setTeamColors(TEAM_COLORS.slice(0, count));
     setTeamNames((names) =>
       Array.from({ length: count }, (_, index) => names[index] || `Team ${index + 1}`),
     );
@@ -84,29 +82,32 @@ export default function BattleSetup() {
   }
 
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 px-5 py-8 pb-24 text-white sm:px-8 lg:pb-36">
-      <div className="mx-auto max-w-4xl">
-        <Link className="text-sm font-semibold text-slate-500 hover:text-amber-300" href="/game">
+    <main className="arcade-shell arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] px-5 py-4 text-white sm:px-8">
+      <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
+      <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
+      <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
+      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col">
+        <Link className="shrink-0 text-sm font-semibold text-slate-400 transition-colors hover:text-cyan-300" href="/game">
           ← Back to modes
         </Link>
 
-        <header className="mt-10">
-          <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · Battle</p>
-          <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Set up your battle</h1>
-          <p className="mt-4 max-w-2xl leading-7 text-slate-400">
+        <header className="mt-4 shrink-0">
+          <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Five Hearts Quiz · Battle</p>
+          <h1 className="mt-2 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-5xl">Set up your battle</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-5 text-slate-400">
             Choose the match rules, team names, and a unique color for each team.
           </p>
         </header>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_280px] lg:items-start">
-          <div className="space-y-5">
-            <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+        <div className="mt-4 grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:grid-rows-[auto_1fr] lg:items-start">
+          <div className="grid gap-3 sm:grid-cols-3 lg:contents">
+            <section className="arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-1">
               <h2 className="text-lg font-black">Number of teams</h2>
               <p className="mt-1 text-sm text-slate-500">Battle supports three to five teams.</p>
-              <div className="mt-5 grid grid-cols-3 gap-3">
+              <div className="mt-3 grid grid-cols-3 gap-2">
                 {[3, 4, 5].map((count) => (
                   <button
-                    className={`rounded-xl border px-4 py-4 text-xl font-black transition ${
+                    className={`rounded-xl border px-3 py-3 text-lg font-black transition ${
                       teamCount === count
                         ? "border-amber-400 bg-amber-400 text-slate-950"
                         : "border-slate-700 bg-slate-800 text-slate-200 hover:border-amber-400"
@@ -121,14 +122,14 @@ export default function BattleSetup() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+            <section className="arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-1">
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-black">Questions in the game</h2>
                 <span className="rounded-full bg-amber-400 px-4 py-2 text-xl font-black text-slate-950">
                   {questionCount}
                 </span>
               </div>
-              <label className="mt-6 block">
+              <label className="mt-3 block">
                 <span className="sr-only">Number of questions</span>
                 <input
                   aria-label="Number of questions"
@@ -147,12 +148,12 @@ export default function BattleSetup() {
               </label>
             </section>
 
-            <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+            <section className="arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-1">
               <h2 className="text-lg font-black">Time limit per question</h2>
-              <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 {[{ label: "60 seconds", value: 60 }, { label: "No limit", value: null }].map((option) => (
                   <button
-                    className={`rounded-xl border px-4 py-4 font-bold transition ${
+                    className={`rounded-xl border px-3 py-3 text-sm font-bold transition ${
                       timeLimit === option.value
                         ? "border-amber-400 bg-amber-400 text-slate-950"
                         : "border-slate-700 bg-slate-800 text-slate-200 hover:border-amber-400"
@@ -167,18 +168,18 @@ export default function BattleSetup() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+            <section className="setup-teams arcade-panel rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 backdrop-blur-xl lg:col-start-2 lg:row-span-2 lg:row-start-1">
               <h2 className="text-lg font-black">Set team names and colors</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Each team picks a unique color. Their name, hearts, and score appear throughout the game.
+                Every team has a preallocated color that follows them throughout the game.
               </p>
-              <div className="mt-6 space-y-8">
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {Array.from({ length: teamCount }, (_, teamIndex) => {
                   const selectedColor = teamColors[teamIndex];
                   const selectedTeamColor = TEAM_COLOR_CONFIG[selectedColor];
                   return (
-                    <div className={`rounded-xl border-t border-l-4 ${selectedTeamColor.border} ${selectedTeamColor.surface}/10 pt-6 pl-4 first:border-t-0 first:pt-0`} key={teamIndex}>
-                      <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className={`rounded-xl border-l-4 ${selectedTeamColor.border} ${selectedTeamColor.surface}/10 p-3`} key={teamIndex}>
+                      <div className="mb-2 flex items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
                             <span className={`h-3 w-3 rounded-full ${selectedTeamColor.swatch} ring-2 ring-white`} />
@@ -186,18 +187,16 @@ export default function BattleSetup() {
                               Team {teamIndex + 1}
                             </p>
                           </div>
-                          <p className={`mt-1 font-black ${selectedTeamColor.text}`}>{selectedTeamColor.name}</p>
+                          <p className={`mt-0.5 text-sm font-black ${selectedTeamColor.text}`}>{selectedTeamColor.name}</p>
                         </div>
-                        <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${selectedTeamColor.swatch} ${selectedTeamColor.text}`}>
+                        <span className={`rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${selectedTeamColor.swatch} ${selectedTeamColor.text}`}>
                           Selected
                         </span>
                       </div>
-                      <label className="mb-4 block">
-                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                          Team name
-                        </span>
+                      <label className="mb-2 block">
+                        <span className="sr-only">Team name</span>
                         <input
-                          className={`w-full rounded-xl border bg-slate-950 px-4 py-3 font-bold text-white outline-none transition placeholder:text-slate-600 focus:ring-2 ${selectedTeamColor.border} focus:ring-amber-400/20`}
+                          className={`w-full rounded-lg border bg-slate-950 px-3 py-2 text-sm font-bold text-white outline-none transition placeholder:text-slate-600 focus:ring-2 ${selectedTeamColor.border} focus:ring-amber-400/20`}
                           maxLength={10}
                           onChange={(event) => updateTeamName(teamIndex, event.target.value)}
                           placeholder={`Enter Team ${teamIndex + 1} name`}
@@ -205,40 +204,6 @@ export default function BattleSetup() {
                           value={teamNames[teamIndex]}
                         />
                       </label>
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-                        {COLORS.map((colorKey) => {
-                          const color = TEAM_COLOR_CONFIG[colorKey];
-                          const isSelected = selectedColor === colorKey;
-                          const isTakenByOtherTeam = teamColors.some(
-                            (currentColor, currentIndex) => currentIndex !== teamIndex && currentColor === colorKey,
-                          );
-                          return (
-                            <button
-                              aria-label={`Select ${color.name} for Team ${teamIndex + 1}`}
-                              className={`relative min-w-0 rounded-2xl text-left transition ${
-                                isSelected
-                                  ? `z-10 scale-[1.04] ring-4 ring-offset-2 ring-offset-white ${color.active}`
-                                  : isTakenByOtherTeam
-                                    ? "cursor-not-allowed opacity-30"
-                                    : `hover:scale-[1.02] hover:ring-2 ${color.active}`
-                              }`}
-                              disabled={isTakenByOtherTeam}
-                              key={colorKey}
-                              onClick={() => setTeamColors((colors) => colors.map((currentColor, currentIndex) => currentIndex === teamIndex ? colorKey : currentColor))}
-                              type="button"
-                            >
-                              <span
-                                className={`flex h-16 items-center justify-center rounded-xl text-sm font-black ${color.text}`}
-                                style={{ backgroundColor: color.value }}
-                              >
-                                {isSelected && <span className="mr-1" aria-hidden="true">✓</span>}
-                                {color.name}
-                              </span>
-                              {isSelected && <span className="mt-1 block text-center text-[10px] font-black uppercase tracking-wider text-emerald-300">Picked</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
                     </div>
                   );
                 })}
@@ -246,31 +211,14 @@ export default function BattleSetup() {
             </section>
           </div>
 
-          <aside className="rounded-3xl border border-amber-400/30 bg-amber-400/5 p-6 lg:sticky lg:top-6">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-amber-400">Match summary</p>
-            <h2 className="mt-3 text-2xl font-black">Battle</h2>
-            <dl className="mt-6 space-y-4 text-sm">
-              <div className="flex justify-between border-b border-slate-800 pb-3">
-                <dt className="text-slate-500">Teams</dt>
-                <dd className="font-bold">{teamCount}</dd>
-              </div>
-              <div className="flex justify-between border-b border-slate-800 pb-3">
-                <dt className="text-slate-500">Questions</dt>
-                <dd className="font-bold">{questionCount}</dd>
-              </div>
-              <div className="flex justify-between border-b border-slate-800 pb-3">
-                <dt className="text-slate-500">Time limit</dt>
-                <dd className="font-bold">{timeLimit === null ? "None" : `${timeLimit}s`}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Starting hearts</dt>
-                <dd className="font-bold text-rose-400">5 each</dd>
-              </div>
-            </dl>
-            <button className="mt-8 w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-60" disabled={isCreatingBattle} onClick={createBattle} type="button">
-              {isCreatingBattle ? "Loading questions..." : "Create battle"}
-            </button>
-          </aside>
+          <button
+            className="arcade-launch-button w-full rounded-xl bg-amber-400 px-5 py-4 font-black text-slate-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-60 lg:col-span-2"
+            disabled={isCreatingBattle}
+            onClick={createBattle}
+            type="button"
+          >
+            {isCreatingBattle ? "Loading questions..." : "Create battle"}
+          </button>
         </div>
       </div>
     </main>
@@ -295,7 +243,7 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
     : teams;
 
   return (
-    <div className="border-b border-slate-800 bg-slate-900 p-3">
+    <div className="arcade-hud shrink-0 border-b border-white/10 bg-slate-950/80 p-3 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-wrap items-center gap-3">
         <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3">
@@ -343,10 +291,10 @@ function VictoryScreen({ teams, onMainMenu }) {
   const questionsLeader = [...teams].sort((first, second) => second.questionsAsked - first.questionsAsked)[0];
 
   return (
-    <main className="manga-shell relative z-[55] min-h-screen bg-slate-950 px-6 py-10 pb-32 text-white lg:pb-40">
+    <main className="arcade-game relative z-[55] flex h-screen flex-col overflow-hidden bg-[#090A0F] px-6 py-6 text-white">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts · Battle complete</p>
+          <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Five Hearts Quiz · Battle complete</p>
           <h1 className="mt-4 text-5xl font-black tracking-tight text-amber-300 sm:text-7xl">Victory!</h1>
           <p className="mt-4 text-lg text-slate-300">
             {allTeamsEliminated
@@ -578,14 +526,14 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
       const cannotSelfSelect = game.selfSelectionTeamId === game.startingTeamId
         && game.selfSelectionCount >= 1;
       return (
-        <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
+        <main className="arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] pb-6 text-white">
           <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
           <div className="mx-auto max-w-3xl px-6 py-10">
-            <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
+            <p className="text-sm font-bold uppercase tracking-[0.3em] text-cyan-300">
               Question {game.questionNumber}
             </p>
-            <div className="mt-6 rounded-3xl border border-amber-400/30 bg-slate-900 p-7 text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Category</p>
+            <div className="arcade-arena mt-4 rounded-2xl border border-slate-700/60 bg-slate-900/80 p-5 text-center shadow-2xl backdrop-blur-xl sm:mt-6 sm:p-8">
+              <p className="mb-4 inline-block rounded-full bg-gradient-to-r from-violet-500 to-cyan-400 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">Category</p>
               <h1 className="mt-4 flex items-center justify-center gap-3 text-4xl font-black text-amber-300">
                 {activeQuestion?.category}
                 <span className="rounded-full border border-sky-400/40 bg-sky-400/10 px-3 py-1 text-sm uppercase tracking-[0.15em] text-sky-300">
@@ -625,11 +573,11 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     }
 
     return (
-      <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
+      <main className="arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] pb-6 text-white">
         <TeamStrip highlightedTeamId={game.answeringTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
-      <div className="mx-auto max-w-4xl px-6 py-10">
+      <div className="arcade-arena mx-auto w-full max-w-4xl rounded-2xl border border-slate-700/60 bg-slate-900/80 px-6 py-6 shadow-2xl backdrop-blur-xl sm:px-8 sm:py-8">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
+            <p className="text-sm font-bold uppercase tracking-[0.3em] text-cyan-300">
               Question {game.questionNumber} · {activeQuestion?.category}
               <span className="ml-2 rounded-full border border-sky-400/40 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-sky-300">
                 {activeQuestion?.difficultyLabel}
@@ -641,18 +589,18 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
               </span>
             )}
           </div>
-          <h1 className="mt-4 text-3xl font-black sm:text-5xl">{activeQuestion?.questionText}</h1>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{activeQuestion?.questionText}</h1>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {visibleAnswers.map((answer, index) => (
               <button
-                className={`rounded-2xl border p-5 text-left text-lg font-bold transition-all duration-300 ease-out ${
+                className={`rounded-xl border p-4 text-left text-lg font-semibold shadow-md transition-all duration-200 active:scale-[0.99] ${
                   answerResult && index === activeQuestion.correctAnswerIndex && isCorrectAnswerRevealed
                       ? "answer-correct border-brass bg-brass/20 text-ink-blue"
                     : selectedAnswer === index && answerResult && !answerResult.isCorrect
                         ? "answer-incorrect border-terracotta bg-terracotta/20 text-ink-blue"
                       : selectedAnswer === index && answerResult?.isCorrect
                           ? "answer-correct border-brass bg-brass/20 text-ink-blue"
-                        : "border-slate-700 bg-slate-900 hover:border-amber-400"
+                        : "border-slate-700 bg-slate-800/90 text-slate-100 hover:border-cyan-400 hover:bg-slate-800 hover:shadow-cyan-500/20"
                 }`}
                 disabled={Boolean(answerResult)}
                 key={answer}
@@ -666,7 +614,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
           </div>
         </div>
         {answerResult && isFeedbackReady && (
-          <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/80 p-6 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[70] grid place-items-center bg-[#090A0F]/85 p-6 backdrop-blur-sm">
             <section
               aria-labelledby="answer-result-title"
               aria-modal="true"
@@ -715,7 +663,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
   }
 
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 pb-24 text-white lg:pb-36">
+    <main className="arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] pb-6 text-white">
       <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">

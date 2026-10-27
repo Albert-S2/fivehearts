@@ -26,44 +26,54 @@ const MODES = [
 
 export default function GamePage() {
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 px-6 py-12 text-white">
-      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-4xl flex-col">
-        <header className="flex items-center justify-between border-b border-slate-800 pb-5">
-          <Link className="text-sm font-semibold text-slate-500 hover:text-amber-300" href="/">
+    <main className="arcade-shell relative flex h-screen flex-col justify-between overflow-hidden bg-[#090A0F] px-5 py-5 text-white sm:px-8 sm:py-6">
+      <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
+      <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
+      <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
+      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
+        <header className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
+          <Link className="text-sm font-semibold text-slate-400 transition-colors hover:text-cyan-300" href="/">
             ← Back to game room
           </Link>
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-600">Five Hearts</span>
+          <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+            Five Hearts Quiz
+          </span>
         </header>
 
-        <section className="flex flex-1 flex-col justify-center py-12">
+        <section className="flex min-h-0 flex-1 flex-col justify-center py-7 sm:py-8">
           <div className="text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-400">Choose your mode</p>
-            <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-6xl">How will you play?</h1>
-            <p className="mx-auto mt-4 max-w-xl leading-7 text-slate-400">
-              Choose a mode to set up your Five Hearts game.
+            <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Choose your mode</p>
+            <h1 className="mt-3 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-6xl">
+              How will you play?
+            </h1>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+              Pick a way to play, gather everyone around, and start the next challenge.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
             {MODES.map((mode) => (
               <Link
-                className={`boutique-card group border-stone-300/70 bg-white p-7 text-left hover:-translate-y-1 hover:border-forest-sage/40 hover:shadow-xl`}
+                className="group rounded-2xl border border-slate-700/60 bg-slate-900/80 p-5 text-left shadow-2xl shadow-fuchsia-950/20 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:shadow-fuchsia-950/40"
                 key={mode.id}
                 href={`/game/${mode.id}`}
               >
-                <span className="grid h-16 w-16 place-items-center rounded-2xl bg-brass text-3xl font-black text-ink-blue shadow-[inset_0_-4px_0_rgb(154_107_45_/_0.3)]">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-cyan-300 via-fuchsia-400 to-violet-500 text-3xl font-black text-[#090A0F] shadow-lg shadow-fuchsia-500/20">
                   {mode.icon}
                 </span>
-                <h2 className="mt-8 text-3xl font-black group-hover:text-terracotta">{mode.name}</h2>
-                <p className="mt-3 min-h-14 leading-7 text-slate-400">{mode.description}</p>
-                <span className="boutique-button mt-7 inline-flex px-4 py-2 text-sm">Choose {mode.name} →</span>
+                <h2 className="mt-5 text-2xl font-black text-white">{mode.name}</h2>
+                <p className="mt-2 min-h-12 text-sm leading-6 text-slate-400">{mode.description}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-black text-fuchsia-300">
+                  Choose {mode.name}
+                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
+                </span>
               </Link>
             ))}
           </div>
         </section>
 
-        <footer className="border-t border-slate-800 pt-5 text-center text-xs text-slate-600">
-          Every mode uses the Five Hearts scoring and heart system.
+        <footer className="shrink-0 border-t border-white/10 pt-4 text-center text-xs text-slate-500">
+          Every mode uses the Five Hearts Quiz scoring and heart system.
         </footer>
       </div>
     </main>
