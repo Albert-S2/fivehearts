@@ -347,6 +347,49 @@ input:focus-visible {
   transform: translateY(-2px);
 }
 
+.team-playing-card {
+  position: relative;
+  min-height: 280px;
+  overflow: hidden;
+  transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+}
+
+.team-playing-card::after {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.7rem;
+  content: "✦";
+  color: rgb(255 255 255 / 0.2);
+  font-size: 2rem;
+  pointer-events: none;
+}
+
+.team-playing-card:hover {
+  transform: translateY(-4px) rotate(-1deg);
+  box-shadow: 0 18px 34px rgb(2 6 23 / 0.3);
+}
+
+.arcade-action-footer {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 3.75rem;
+  padding-top: 0.25rem;
+  border: 0;
+  box-shadow: none;
+}
+
+.arcade-action-footer::before,
+.arcade-action-footer::after {
+  display: none !important;
+  content: none !important;
+}
+
+@media (min-width: 1024px) {
+  .arcade-action-footer {
+    margin-bottom: 6.5rem;
+  }
+}
+
 .arcade-game h1,
 .arcade-game h2,
 .arcade-game h3 {
