@@ -7,7 +7,7 @@ import HybridScienceCard, { TEAM_COLOR_CONFIG } from "./HybridScienceCard";
 import { fetchQuestionsForGame } from "../lib/questionService";
 
 const COLORS = [
-  "ruby", "sun", "forest", "ocean", "sky", "violet", "fuchsia", "slate",
+  "red", "blue", "green", "yellow", "purple",
 ];
 
 export default function BattleSetup() {
@@ -15,7 +15,7 @@ export default function BattleSetup() {
   const [teamCount, setTeamCount] = useState(3);
   const [questionCount, setQuestionCount] = useState(20);
   const [timeLimit, setTimeLimit] = useState(60);
-  const [teamColors, setTeamColors] = useState(["ruby", "ocean", "sun"]);
+  const [teamColors, setTeamColors] = useState(["red", "blue", "yellow"]);
   const [teamNames, setTeamNames] = useState(["Team 1", "Team 2", "Team 3"]);
   const [game, setGame] = useState(null);
   const [isCreatingBattle, setIsCreatingBattle] = useState(false);
@@ -175,16 +175,20 @@ export default function BattleSetup() {
               <div className="mt-6 space-y-8">
                 {Array.from({ length: teamCount }, (_, teamIndex) => {
                   const selectedColor = teamColors[teamIndex];
+                  const selectedTeamColor = TEAM_COLOR_CONFIG[selectedColor];
                   return (
-                    <div className="border-t border-slate-800 pt-6 first:border-t-0 first:pt-0" key={teamIndex}>
+                    <div className={`rounded-xl border-t border-l-4 ${selectedTeamColor.border} ${selectedTeamColor.surface}/10 pt-6 pl-4 first:border-t-0 first:pt-0`} key={teamIndex}>
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                            Team {teamIndex + 1}
-                          </p>
-                          <p className="mt-1 font-black">{TEAM_COLOR_CONFIG[selectedColor].name}</p>
+                          <div className="flex items-center gap-2">
+                            <span className={`h-3 w-3 rounded-full ${selectedTeamColor.swatch} ring-2 ring-white`} />
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
+                              Team {teamIndex + 1}
+                            </p>
+                          </div>
+                          <p className={`mt-1 font-black ${selectedTeamColor.text}`}>{selectedTeamColor.name}</p>
                         </div>
-                        <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">
+                        <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${selectedTeamColor.swatch} ${selectedTeamColor.text}`}>
                           Selected
                         </span>
                       </div>
@@ -193,7 +197,7 @@ export default function BattleSetup() {
                           Team name
                         </span>
                         <input
-                          className="w-full rounded-xl border border-slate-600 bg-slate-950 px-4 py-3 font-bold text-white outline-none transition placeholder:text-slate-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                          className={`w-full rounded-xl border bg-slate-950 px-4 py-3 font-bold text-white outline-none transition placeholder:text-slate-600 focus:ring-2 ${selectedTeamColor.border} focus:ring-amber-400/20`}
                           maxLength={10}
                           onChange={(event) => updateTeamName(teamIndex, event.target.value)}
                           placeholder={`Enter Team ${teamIndex + 1} name`}
@@ -213,7 +217,7 @@ export default function BattleSetup() {
                               aria-label={`Select ${color.name} for Team ${teamIndex + 1}`}
                               className={`relative min-w-0 rounded-2xl text-left transition ${
                                 isSelected
-                                  ? `z-10 scale-[1.02] ring-2 ${color.active}`
+                                  ? `z-10 scale-[1.04] ring-4 ring-offset-2 ring-offset-white ${color.active}`
                                   : isTakenByOtherTeam
                                     ? "cursor-not-allowed opacity-30"
                                     : `hover:scale-[1.02] hover:ring-2 ${color.active}`
@@ -223,7 +227,13 @@ export default function BattleSetup() {
                               onClick={() => setTeamColors((colors) => colors.map((currentColor, currentIndex) => currentIndex === teamIndex ? colorKey : currentColor))}
                               type="button"
                             >
-                              <span className={`flex h-16 items-center justify-center rounded-xl ${color.swatch} text-sm font-black text-slate-950`}>{color.name}</span>
+                              <span
+                                className={`flex h-16 items-center justify-center rounded-xl text-sm font-black ${color.text}`}
+                                style={{ backgroundColor: color.value }}
+                              >
+                                {isSelected && <span className="mr-1" aria-hidden="true">✓</span>}
+                                {color.name}
+                              </span>
                               {isSelected && <span className="mt-1 block text-center text-[10px] font-black uppercase tracking-wider text-emerald-300">Picked</span>}
                             </button>
                           );

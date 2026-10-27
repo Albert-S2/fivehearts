@@ -26,8 +26,8 @@ const MODES = [
 
 export default function GamePage() {
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 px-5 py-8 text-white sm:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl flex-col">
+    <main className="manga-shell min-h-screen bg-slate-950 px-6 py-12 text-white">
+      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-4xl flex-col">
         <header className="flex items-center justify-between border-b border-slate-800 pb-5">
           <Link className="text-sm font-semibold text-slate-500 hover:text-amber-300" href="/">
             ← Back to game room
@@ -47,7 +47,7 @@ export default function GamePage() {
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {MODES.map((mode) => (
               <Link
-                className={`boutique-card group border-stone-200/60 bg-gradient-to-br ${mode.accent} to-white p-7 text-left`}
+                className={`boutique-card group border-stone-300/70 bg-white p-7 text-left hover:-translate-y-1 hover:border-forest-sage/40 hover:shadow-xl`}
                 key={mode.id}
                 href={`/game/${mode.id}`}
               >
@@ -56,7 +56,7 @@ export default function GamePage() {
                 </span>
                 <h2 className="mt-8 text-3xl font-black group-hover:text-terracotta">{mode.name}</h2>
                 <p className="mt-3 min-h-14 leading-7 text-slate-400">{mode.description}</p>
-                <span className="mt-7 inline-block font-black text-terracotta">Choose {mode.name} →</span>
+                <span className="boutique-button mt-7 inline-flex px-4 py-2 text-sm">Choose {mode.name} →</span>
               </Link>
             ))}
           </div>

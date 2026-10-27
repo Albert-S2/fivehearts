@@ -1,14 +1,11 @@
 "use client";
 
 export const TEAM_COLOR_CONFIG = {
-  ruby: { name: "Rose", surface: "bg-player-coral", border: "border-player-coral", active: "ring-player-coral", swatch: "bg-player-coral" },
-  sun: { name: "Butter", surface: "bg-player-gold", border: "border-player-gold", active: "ring-player-gold", swatch: "bg-player-gold" },
-  forest: { name: "Mint", surface: "bg-player-forest", border: "border-player-forest", active: "ring-player-forest", swatch: "bg-player-forest" },
-  ocean: { name: "Powder Blue", surface: "bg-player-slate", border: "border-player-slate", active: "ring-player-slate", swatch: "bg-player-slate" },
-  sky: { name: "Periwinkle", surface: "bg-ink-blue/20", border: "border-ink-blue", active: "ring-ink-blue", swatch: "bg-ink-blue/20" },
-  violet: { name: "Lilac", surface: "bg-player-plum", border: "border-player-plum", active: "ring-player-plum", swatch: "bg-player-plum" },
-  fuchsia: { name: "Lavender", surface: "bg-player-plum/70", border: "border-player-plum", active: "ring-player-plum", swatch: "bg-player-plum/70" },
-  slate: { name: "Cloud", surface: "bg-player-slate/70", border: "border-player-slate", active: "ring-player-slate", swatch: "bg-player-slate/70" },
+  red: { name: "Red", value: "#E63946", surface: "bg-player-red", border: "border-player-red", active: "ring-player-red", swatch: "bg-player-red", text: "text-white" },
+  blue: { name: "Blue", value: "#2774E6", surface: "bg-player-blue", border: "border-player-blue", active: "ring-player-blue", swatch: "bg-player-blue", text: "text-white" },
+  green: { name: "Green", value: "#2A9D5B", surface: "bg-player-green", border: "border-player-green", active: "ring-player-green", swatch: "bg-player-green", text: "text-white" },
+  yellow: { name: "Yellow", value: "#F2C94C", surface: "bg-player-yellow", border: "border-player-yellow", active: "ring-player-yellow", swatch: "bg-player-yellow", text: "text-ink-blue" },
+  purple: { name: "Purple", value: "#8E44AD", surface: "bg-player-purple", border: "border-player-purple", active: "ring-player-purple", swatch: "bg-player-purple", text: "text-white" },
 };
 
 function Heart({ active }) {
@@ -24,7 +21,7 @@ function Heart({ active }) {
 }
 
 export default function HybridScienceCard({
-  color = "slate",
+  color = "red",
   teamName,
   hearts,
   points,
@@ -33,7 +30,7 @@ export default function HybridScienceCard({
   compact = false,
   extraCompact = false,
 }) {
-  const config = TEAM_COLOR_CONFIG[color] || TEAM_COLOR_CONFIG.slate;
+  const config = TEAM_COLOR_CONFIG[color] || TEAM_COLOR_CONFIG.red;
 
   return (
     <article
@@ -49,10 +46,10 @@ export default function HybridScienceCard({
       </div>
 
       <div className="absolute inset-y-0 right-0 z-10 flex items-center p-4">
-        <p className={`${extraCompact ? "text-base" : compact ? "text-lg" : "text-2xl"} font-black text-brass`}>{points}</p>
+        <p className={`${extraCompact ? "text-base" : compact ? "text-lg" : "text-2xl"} font-black ${config.text}`}>{points}</p>
       </div>
       <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-3 pt-8 text-center">
-        <h2 className={`truncate ${extraCompact ? "text-xs" : compact ? "text-sm" : "text-lg"} font-black tracking-tight text-ink-blue`}>{teamName}</h2>
+        <h2 className={`truncate ${extraCompact ? "text-xs" : compact ? "text-sm" : "text-lg"} font-black tracking-tight ${config.text}`}>{teamName}</h2>
       </div>
 
       {isEliminated && (

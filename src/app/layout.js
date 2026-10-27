@@ -34,18 +34,18 @@ export default function RootLayout({ children }) {
         />
         <div className="grid min-h-screen grid-cols-1 md:grid-cols-[190px_1fr_190px]">
           <aside className="z-20 hidden justify-center px-2 pt-8 md:flex">
-            <div className="sticky top-8 h-[300px]">
+            <div className="ad-frame sticky top-8 h-[300px]">
               <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-left-sidebar" />
             </div>
           </aside>
           <div className="min-w-0 pb-28">{children}</div>
           <aside className="z-20 hidden justify-center px-2 pt-8 md:flex">
-            <div className="sticky top-8 h-[300px]">
+            <div className="ad-frame sticky top-8 h-[300px]">
               <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-right-sidebar" />
             </div>
           </aside>
         </div>
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex h-[50px] items-center justify-center border-t border-stone-200 bg-white/95 px-2 shadow-[0_-4px_16px_rgb(45_55_72_/_0.1)] backdrop-blur lg:h-[90px]">
+        <div className="ad-frame fixed bottom-0 left-0 right-0 z-50 flex h-[50px] items-center justify-center border-x-0 border-b-0 bg-white/95 px-2 shadow-[0_-4px_16px_rgb(45_55_72_/_0.1)] backdrop-blur lg:h-[90px]">
           <div className="block h-[50px] w-[320px] lg:hidden">
             <AdContainer
               className="h-[50px] w-[320px]"

@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="manga-shell min-h-screen bg-slate-950 px-5 py-6 text-white sm:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col">
+    <main className="manga-shell min-h-screen bg-slate-950 px-6 py-12 text-white">
+      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-4xl flex-col">
         <header className="flex items-center justify-between border-b border-slate-800 pb-5">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-brass text-xl font-black text-ink-blue shadow-[inset_0_-3px_0_rgb(154_107_45_/_0.3)]">
@@ -11,18 +11,18 @@ export default function Home() {
             </span>
             <span className="text-lg font-black tracking-tight">Game Room</span>
           </div>
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">Play together</span>
+          <span className="rounded-full border border-brass/50 bg-brass/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-terracotta">Play together</span>
         </header>
 
         <section className="flex flex-1 flex-col items-center justify-center py-12 text-center">
           <p className="text-sm font-bold uppercase tracking-[0.35em] text-terracotta">Choose a game</p>
-          <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-6xl">What are we playing?</h1>
+          <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-6xl">What are we playing?</h1>
           <p className="mt-4 max-w-xl leading-7 text-slate-400">
             Pick a game to start. More shared-screen games can be added here over time.
           </p>
 
           <Link
-            className="boutique-card group mt-10 w-full max-w-md border-brass/50 bg-gradient-to-br from-brass/15 via-white to-white p-7 text-left"
+            className="boutique-card group mt-10 w-full max-w-md border-stone-300/70 bg-white p-7 text-left hover:-translate-y-1 hover:border-forest-sage/40 hover:shadow-xl"
             href="/game"
           >
             <div className="flex items-start justify-between gap-4">
@@ -39,7 +39,7 @@ export default function Home() {
             </p>
             <div className="mt-7 flex items-center justify-between border-t border-slate-800 pt-5">
               <span className="text-sm font-semibold text-slate-500">Trivia battle</span>
-              <span className="font-black text-terracotta">Open game <span aria-hidden="true">→</span></span>
+              <span className="boutique-button inline-flex items-center gap-2 px-4 py-2 text-sm">Open game <span aria-hidden="true">→</span></span>
             </div>
           </Link>
         </section>
