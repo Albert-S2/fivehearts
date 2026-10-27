@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f5f0;
-  --foreground: #2d3748;
+  --background: #f5f2eb;
+  --foreground: #1f2937;
   --surface: #ffffff;
   --surface-muted: #eee9df;
-  --ink-blue: #2d3748;
-  --forest-sage: #3b4d3c;
-  --terracotta: #d97757;
+  --ink-blue: #1f2937;
+  --forest-sage: #344e41;
+  --terracotta: #bc6c25;
   --brass: #d4a373;
   --parchment: #ffffff;
   --line: #d8d0c3;
@@ -18,17 +18,18 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-ink-blue: #2d3748;
-  --color-forest-sage: #3b4d3c;
-  --color-terracotta: #d97757;
+  --color-table-parchment: #f5f2eb;
+  --color-ink-blue: #1f2937;
+  --color-forest-sage: #344e41;
+  --color-terracotta: #bc6c25;
+  --color-brass-gold: #d4a373;
   --color-brass: #d4a373;
   --color-parchment: #ffffff;
-  --color-player-brick: #e7b0a3;
-  --color-player-forest: #b9d8bd;
-  --color-player-gold: #f3d89a;
-  --color-player-slate: #c4d2e3;
-  --color-player-plum: #ddc2d8;
-  --color-player-coral: #f2c2b4;
+  --color-player-red: #e63946;
+  --color-player-blue: #2774e6;
+  --color-player-green: #2a9d5b;
+  --color-player-yellow: #f2c94c;
+  --color-player-purple: #8e44ad;
   --font-sans: var(--font-ui);
   --font-serif: var(--font-heading);
 }
@@ -46,7 +47,7 @@ body {
   background-image: linear-gradient(
     135deg,
     #fffdf8 0%,
-    #f7f5f0 24%,
+    #f5f2eb 24%,
     #f2e7df 45%,
     #e7eee5 68%,
     #eee8f0 84%,
@@ -102,7 +103,7 @@ input:focus-visible {
   background-image: linear-gradient(
     135deg,
     #fffdf8 0%,
-    #f7f5f0 24%,
+    #f5f2eb 24%,
     #f2e7df 45%,
     #e7eee5 68%,
     #eee8f0 84%,
@@ -189,6 +190,15 @@ input:focus-visible {
   color: var(--ink-blue) !important;
 }
 
+.manga-shell button.bg-amber-400 {
+  background-color: var(--forest-sage) !important;
+  color: #ffffff !important;
+}
+
+.manga-shell button.hover\:bg-amber-300:hover {
+  background-color: #263d32 !important;
+}
+
 .manga-shell .hover\:bg-amber-300:hover {
   background-color: #c28f5b !important;
 }
@@ -241,10 +251,35 @@ input:focus-visible {
 
 .boutique-card {
   border: 1px solid rgb(216 208 195 / 0.8);
-  border-radius: 0.9rem;
+  border-radius: 1rem;
   background: var(--surface);
   box-shadow: 0 3px 0 rgb(45 55 72 / 0.1), 0 10px 24px rgb(45 55 72 / 0.08);
   transition: all 300ms ease-out;
+}
+
+.boutique-button {
+  border-radius: 0.75rem;
+  background: var(--forest-sage);
+  color: #ffffff;
+  box-shadow: inset 0 -3px 0 rgb(31 41 55 / 0.2), 0 3px 0 rgb(31 41 55 / 0.1);
+  font-weight: 800;
+  transition: transform 300ms ease-out, background-color 300ms ease-out, box-shadow 300ms ease-out;
+}
+
+.boutique-button:hover {
+  background: #263d32;
+}
+
+.boutique-button:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 -1px 0 rgb(31 41 55 / 0.2);
+}
+
+.ad-frame {
+  border: 1px solid rgb(216 208 195 / 0.8);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.7);
+  box-shadow: 0 3px 0 rgb(31 41 55 / 0.05), 0 8px 20px rgb(31 41 55 / 0.05);
 }
 
 .boutique-card:hover {
@@ -287,7 +322,7 @@ input:focus-visible {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #1e201e;
+    --background: #191c19;
     --foreground: #f7f5f0;
     --surface: #2d3748;
     --surface-muted: #35423a;
@@ -298,11 +333,11 @@ input:focus-visible {
     background-image: linear-gradient(
       135deg,
       #252925 0%,
-      #1e201e 28%,
+      #191c19 28%,
       #302b2a 50%,
       #263128 72%,
       #302a31 86%,
-      #1e201e 100%
+      #191c19 100%
     );
     background-size: 240% 240%;
   }

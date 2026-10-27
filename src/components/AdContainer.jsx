@@ -44,12 +44,12 @@ export default function AdContainer({
   return (
     <div
       aria-label={showPreview ? `Ad preview ${slotId}` : "Advertisement"}
-      className={`relative z-20 flex shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-amber-500 bg-white shadow-inner shadow-amber-500/20 ${className}`}
+      className={`ad-frame relative z-20 flex shrink-0 items-center justify-center overflow-hidden ${className}`}
       role="complementary"
       style={{ ...dimensions, ...style }}
     >
       {showPreview ? (
-        <div className="flex h-full w-full flex-col items-center justify-center bg-white px-3 text-center text-xs font-black uppercase tracking-[0.16em] text-slate-900">
+        <div className="flex h-full w-full flex-col items-center justify-center bg-transparent px-3 text-center text-xs font-black uppercase tracking-[0.16em] text-ink-blue">
           <span>Ad preview</span>
           <span className="mt-2 max-w-full truncate text-[10px] font-bold tracking-normal text-slate-500">
             {slotId}
@@ -57,7 +57,7 @@ export default function AdContainer({
         </div>
       ) : (
         <>
-          <span className="pointer-events-none absolute inset-0 z-20 grid place-items-center bg-white/80 text-[10px] font-black uppercase tracking-[0.18em] text-slate-900">
+          <span className="pointer-events-none absolute inset-0 z-20 grid place-items-center bg-white/80 text-[10px] font-black uppercase tracking-[0.18em] text-ink-blue">
             Advertisement
           </span>
           <ins
