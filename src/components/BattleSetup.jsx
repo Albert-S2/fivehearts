@@ -305,7 +305,7 @@ export default function BattleSetup() {
         </div>
         ) : (
           <div className="mt-5 flex min-h-0 flex-1 flex-col pb-20 lg:pb-[110px]">
-            <div className="flex min-h-0 flex-1 items-center gap-3 overflow-x-auto py-4">
+            <div className="flex min-h-0 flex-1 items-center justify-around gap-3 overflow-x-auto px-2 py-4 lg:px-8">
               {Array.from({ length: teamCount }, (_, teamIndex) => {
                 const selectedColor = teamColors[teamIndex];
                 const selectedTeamColor = TEAM_COLOR_CONFIG[selectedColor];
