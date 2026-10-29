@@ -21,9 +21,6 @@ export default function Home() {
               </span>
             </div>
           </div>
-          <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
-            Shared screen
-          </span>
         </header>
 
         <section className="flex min-h-0 flex-1 flex-col items-center justify-center py-7 text-center sm:py-8">
@@ -42,9 +39,6 @@ export default function Home() {
             <div className="flex items-start justify-between gap-4">
               <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-cyan-300 via-fuchsia-400 to-violet-500 text-3xl font-black text-[#090A0F] shadow-lg shadow-fuchsia-500/20">
                 5
-              </span>
-              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
-                Ready to play
               </span>
             </div>
             <h2 className="mt-6 text-3xl font-black text-white">Five Hearts Quiz</h2>
