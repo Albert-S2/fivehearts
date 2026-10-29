@@ -1,8 +1,8 @@
 "use client";
 
 export const TEAM_COLOR_CONFIG = {
-  red: { name: "Red", symbol: "◆", value: "#ff3b4d", panel: "#641b28", surface: "bg-player-red", border: "border-player-red", active: "ring-player-red", swatch: "bg-player-red", text: "text-white" },
-  blue: { name: "Blue", symbol: "◈", value: "#3288ff", panel: "#173d78", surface: "bg-player-blue", border: "border-player-blue", active: "ring-player-blue", swatch: "bg-player-blue", text: "text-white" },
+  red: { name: "Teal", symbol: "◆", value: "#2dd4bf", panel: "#164e63", surface: "bg-player-teal", border: "border-player-teal", active: "ring-player-teal", swatch: "bg-player-teal", text: "text-white" },
+  blue: { name: "Blue", symbol: "●", value: "#3288ff", panel: "#173d78", surface: "bg-player-blue", border: "border-player-blue", active: "ring-player-blue", swatch: "bg-player-blue", text: "text-white" },
   green: { name: "Green", symbol: "▲", value: "#2fcf73", panel: "#145b38", surface: "bg-player-green", border: "border-player-green", active: "ring-player-green", swatch: "bg-player-green", text: "text-white" },
   yellow: { name: "Yellow", symbol: "★", value: "#ffd447", panel: "#6b5315", surface: "bg-player-yellow", border: "border-player-yellow", active: "ring-player-yellow", swatch: "bg-player-yellow", text: "text-white" },
   purple: { name: "Purple", symbol: "✦", value: "#b65cff", panel: "#51216d", surface: "bg-player-purple", border: "border-player-purple", active: "ring-player-purple", swatch: "bg-player-purple", text: "text-white" },

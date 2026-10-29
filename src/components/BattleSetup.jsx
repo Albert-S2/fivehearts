@@ -382,7 +382,7 @@ function Hearts({ count }) {
   );
 }
 
-function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, turnOrder, lastTransition, questionCompact = false }) {
+function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, turnOrder, lastTransition, questionCompact = false, onMainMenu }) {
   const orderedTeams = turnOrder.length
     ? turnOrder.map((teamId) => teams.find((team) => team.id === teamId)).filter(Boolean)
     : teams;
@@ -414,6 +414,15 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
             </div>
           ))}
         </div>
+        {onMainMenu && (
+          <button
+            className="ml-auto shrink-0 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300 transition hover:border-rose-400 hover:text-rose-300"
+            onClick={onMainMenu}
+            type="button"
+          >
+            Give up game
+          </button>
+        )}
       </div>
         {turnOrder.length > 0 && (
           <p className={`${questionCompact ? "mt-2 pt-2 text-xs" : "mt-3 pt-3 text-sm"} border-t border-slate-800 font-bold uppercase tracking-[0.12em] text-slate-300`}>
@@ -672,7 +681,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
         && game.selfSelectionCount >= 1;
       return (
         <main className="arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] pb-6 text-white">
-          <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
+          <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} onMainMenu={onMainMenu} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
           <div className="mx-auto max-w-3xl px-6 py-10">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-cyan-300">
               Question {game.questionNumber}
@@ -682,7 +691,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
               <h1 className="mt-4 flex items-center justify-center gap-3 text-4xl font-black text-amber-300">
                 {activeQuestion?.category}
                 <span className="rounded-full border border-sky-400/40 bg-sky-400/10 px-3 py-1 text-sm uppercase tracking-[0.15em] text-sky-300">
-                  {activeQuestion?.difficultyLabel}
+                  {activeQuestion?.difficultyLabel} · +{["Hard", "Difficult"].includes(activeQuestion?.difficultyLabel) ? 20 : 10} points
                 </span>
               </h1>
               <p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-slate-300">
@@ -719,13 +728,13 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
 
     return (
       <main className="arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] pb-6 text-white">
-        <TeamStrip highlightedTeamId={game.answeringTeamId} lastTransition={game.lastTransition} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
+        <TeamStrip highlightedTeamId={game.answeringTeamId} lastTransition={game.lastTransition} onMainMenu={onMainMenu} questionCompact questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
       <div className="arcade-arena mx-auto w-full max-w-4xl rounded-2xl border border-slate-700/60 bg-slate-900/80 px-6 py-6 shadow-2xl backdrop-blur-xl sm:px-8 sm:py-8">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-cyan-300">
               Question {game.questionNumber} · {activeQuestion?.category}
               <span className="ml-2 rounded-full border border-sky-400/40 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-sky-300">
-                {activeQuestion?.difficultyLabel}
+                {activeQuestion?.difficultyLabel} · +{["Hard", "Difficult"].includes(activeQuestion?.difficultyLabel) ? 20 : 10} points
               </span>
             </p>
             {game.timeLimit !== null && (
@@ -809,7 +818,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
 
   return (
     <main className="arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] pb-6 text-white">
-      <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
+      <TeamStrip highlightedTeamId={game.startingTeamId} lastTransition={game.lastTransition} onMainMenu={onMainMenu} questionCount={game.questionCount} questionNumber={game.questionNumber} teams={game.teams} turnOrder={game.turnOrder} />
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
