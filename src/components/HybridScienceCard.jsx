@@ -1,7 +1,7 @@
 "use client";
 
 export const TEAM_COLOR_CONFIG = {
-  red: { name: "Teal", symbol: "◆", value: "#2dd4bf", panel: "#164e63", surface: "bg-player-teal", border: "border-player-teal", active: "ring-player-teal", swatch: "bg-player-teal", text: "text-white" },
+  red: { name: "Red", symbol: "◆", value: "#ff3b4d", panel: "#641b28", surface: "bg-player-red", border: "border-player-red", active: "ring-player-red", swatch: "bg-player-red", text: "text-white" },
   blue: { name: "Blue", symbol: "●", value: "#3288ff", panel: "#173d78", surface: "bg-player-blue", border: "border-player-blue", active: "ring-player-blue", swatch: "bg-player-blue", text: "text-white" },
   green: { name: "Green", symbol: "▲", value: "#2fcf73", panel: "#145b38", surface: "bg-player-green", border: "border-player-green", active: "ring-player-green", swatch: "bg-player-green", text: "text-white" },
   yellow: { name: "Yellow", symbol: "★", value: "#ffd447", panel: "#6b5315", surface: "bg-player-yellow", border: "border-player-yellow", active: "ring-player-yellow", swatch: "bg-player-yellow", text: "text-white" },
@@ -12,7 +12,7 @@ function Heart({ active }) {
   return (
     <svg
       aria-hidden="true"
-      className={`h-5 w-5 ${active ? "fill-rose-500 text-rose-500 drop-shadow-[0_0_5px_rgba(244,63,94,0.8)]" : "fill-slate-800 text-slate-700"}`}
+      className={`h-5 w-5 ${active ? "fill-red-500 text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.85)]" : "fill-slate-800 text-slate-700"}`}
       viewBox="0 0 24 24"
     >
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" stroke="currentColor" strokeWidth="1.5" />
