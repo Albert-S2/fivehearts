@@ -420,7 +420,7 @@ function TeamStrip({ teams, highlightedTeamId, questionNumber, questionCount, tu
             onClick={onMainMenu}
             type="button"
           >
-            Give up game
+            Exit game
           </button>
         )}
       </div>
@@ -502,6 +502,7 @@ function VictoryStat({ label, team, value }) {
 function BattleGame({ game, onMainMenu, onUpdate }) {
   const [isRolling, setIsRolling] = useState(false);
   const [diceFace, setDiceFace] = useState("?");
+  const [rollingTeamId, setRollingTeamId] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(game.timeLimit ?? 60);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [answerResult, setAnswerResult] = useState(null);
@@ -645,6 +646,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     let rolls = 0;
     const interval = window.setInterval(() => {
       const randomTeam = game.teams[Math.floor(Math.random() * game.teams.length)];
+      setRollingTeamId(randomTeam.id);
       setDiceFace(randomTeam.name);
       rolls += 1;
       if (rolls === 10) {
@@ -653,6 +655,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
           .sort(() => Math.random() - 0.5)
           .map((team) => team.id);
         const team = game.teams.find((item) => item.id === order[0]);
+        setRollingTeamId(team.id);
         setDiceFace(team.name);
         onUpdate({
           ...game,
@@ -668,6 +671,10 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
   if (game.phase === "victory") {
     return <VictoryScreen onMainMenu={onMainMenu} teams={game.teams} />;
   }
+
+  const displayedTeam = game.teams.find((team) => team.id === (rollingTeamId || game.startingTeamId))
+    || game.teams[0];
+  const displayedTeamColor = TEAM_COLOR_CONFIG[displayedTeam?.color] || TEAM_COLOR_CONFIG.red;
 
   if (game.phase === "decision" || game.phase === "question") {
     const startingTeam = game.teams.find((team) => team.id === game.startingTeamId);
@@ -834,7 +841,14 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
           <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Starting team</p>
             <div className="mt-6 flex flex-col items-center text-center">
-              <div className={`grid h-32 w-64 max-w-full place-items-center rounded-3xl border-4 border-amber-400 bg-slate-800 px-4 text-center text-2xl font-black text-amber-300 ${isRolling ? "animate-bounce" : ""}`}>
+              <div
+                className={`grid h-32 w-64 max-w-full place-items-center rounded-3xl border-4 px-4 text-center text-2xl font-black text-white shadow-lg ${isRolling ? "animate-bounce" : ""}`}
+                style={{
+                  backgroundColor: displayedTeamColor.panel,
+                  borderColor: displayedTeamColor.value,
+                  boxShadow: `0 0 28px ${displayedTeamColor.value}66`,
+                }}
+              >
                 {diceFace}
               </div>
               <p className="mt-5 text-xl font-black">
