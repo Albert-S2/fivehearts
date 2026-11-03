@@ -16,6 +16,7 @@ const MODE_DETAILS = {
   },
 };
 
+//generateStaticParams function is used to generate the static paths for each game mode. It returns an array of objects, each containing a mode parameter corresponding to the keys in the MODE_DETAILS object. This allows Next.js to pre-render pages for each game mode at build time, improving performance and SEO.
 export function generateStaticParams() {
   return Object.keys(MODE_DETAILS).map((mode) => ({ mode }));
 }
