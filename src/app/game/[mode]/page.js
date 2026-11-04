@@ -20,7 +20,7 @@ const MODE_DETAILS = {
 export function generateStaticParams() {
   return Object.keys(MODE_DETAILS).map((mode) => ({ mode }));
 }
-
+// The ModePage component is an asynchronous function that takes in a params object, which contains the mode parameter. It retrieves the mode from the params and looks up the corresponding details in the MODE_DETAILS object. If the mode is "battle", it renders the BattleSetup component. Otherwise, it renders a main section with information about the selected game mode, including its name and description. If the mode is not found in MODE_DETAILS, it defaults to a generic message indicating that the game mode is not available yet.
 export default async function ModePage({ params = {} }) {
   const resolvedParams = await params;
   const mode = resolvedParams?.mode;
