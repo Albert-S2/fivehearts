@@ -592,6 +592,16 @@ input:focus-visible {
   animation: terracotta-shake 450ms ease-out;
 }
 
+.dice-rolling {
+  animation: dice-roll 90ms linear infinite;
+}
+
+@keyframes dice-roll {
+  0% { transform: rotate(-8deg) scale(0.96); }
+  50% { transform: rotate(8deg) scale(1.04); }
+  100% { transform: rotate(-8deg) scale(0.96); }
+}
+
 @keyframes brass-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgb(212 163 115 / 0); }
   45% { box-shadow: 0 0 0 10px rgb(212 163 115 / 0.28); }
