@@ -12,7 +12,7 @@ const MAX_QUESTIONS = 90;
 
 const RULES = [
   ["♥", "The objective", "Protect your five hearts", "Every team starts with five hearts. The surviving team with the most points wins.", "from-rose-500 to-fuchsia-500"],
-  ["⚂", "Round order", "Roll once, then follow the order", "At the start of every round, the dice set a turn order. No team can choose who answers next.", "from-cyan-400 to-blue-500"],
+  ["⚂", "Round order", "Roll and follow", "At the start of every round, the dice set a turn order. No team can choose who answers next.", "from-cyan-400 to-blue-500"],
   ["✦", "Correct answer", "Keep the momentum", "A correct answer earns points. The next surviving team in the rolled order takes the next question.", "from-emerald-400 to-cyan-400"],
   ["×", "Wrong answer", "Protect your hearts", "An incorrect answer costs one heart. Reach zero hearts and your team is eliminated from future turns.", "from-orange-400 to-rose-500"],
   ["★", "Round summary", "Standings between rounds", "After every team has taken a turn, review the standings before rolling the next round.", "from-fuchsia-400 to-violet-500"],
@@ -40,6 +40,24 @@ export default function BattleSetup() {
   const [showRules, setShowRules] = useState(true);
   const [ruleIndex, setRuleIndex] = useState(0);
   const [setupStep, setSetupStep] = useState("settings");
+
+  function resetBattleState() {
+    setTeamCount(3);
+    setQuestionCount(30);
+    setTimeLimit(60);
+    setTeamColors(["red", "blue", "yellow"]);
+    setTeamNames(["Team 1", "Team 2", "Team 3"]);
+    setGame(null);
+    setIsCreatingBattle(false);
+    setShowRules(true);
+    setRuleIndex(0);
+    setSetupStep("settings");
+  }
+
+  function exitToMainMenu() {
+    resetBattleState();
+    router.replace("/");
+  }
 
   function updateTeamCount(count) {
     setTeamCount(count);
@@ -82,7 +100,7 @@ export default function BattleSetup() {
   }
 
   if (game) {
-    return <BattleGame game={game} onMainMenu={() => { setGame(null); router.replace("/"); }} onUpdate={setGame} />;
+    return <BattleGame game={game} onMainMenu={exitToMainMenu} onUpdate={setGame} />;
   }
 
   if (showRules) {
@@ -152,9 +170,32 @@ function Hearts({ count }) {
   return <div className="flex gap-0.5" aria-label={`${count} of 5 hearts`}><span className="text-lg text-rose-400">{"♥".repeat(count)}</span><span className="text-lg text-slate-700">{"♥".repeat(5 - count)}</span></div>;
 }
 
+function ExitGameButton({ onConfirm, className = "", label = "← Exit" }) {
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  return (
+    <>
+      <button className={`${className || "text-sm font-bold text-slate-400 hover:text-white"}`} onClick={() => setIsConfirming(true)} type="button">{label}</button>
+      {isConfirming && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-[#090A0F]/85 p-5 backdrop-blur-md">
+          <section aria-labelledby="exit-game-title" aria-modal="true" className="w-full max-w-md rounded-3xl border-2 border-rose-400/70 bg-slate-950 p-7 text-center shadow-2xl shadow-rose-950/40" role="dialog">
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-rose-300">Exit game</p>
+            <h2 className="mt-3 text-3xl font-black text-white" id="exit-game-title">Are you sure?</h2>
+            <p className="mt-4 leading-6 text-slate-300">All progress and saves from this game may be lost.</p>
+            <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row">
+              <button className="w-full rounded-xl border border-slate-700 px-5 py-3 font-black text-slate-300 hover:border-cyan-300 hover:text-white" onClick={() => setIsConfirming(false)} type="button">Cancel</button>
+              <button className="w-full rounded-xl border border-rose-400 bg-rose-500/20 px-5 py-3 font-black text-rose-200 hover:bg-rose-500/40" onClick={onConfirm} type="button">Yes, exit to main menu</button>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
+  );
+}
+
 function TeamStrip({ teams, highlightedTeamId, roundNumber, rounds, roundOrder, lastTransition, onMainMenu }) {
   const orderedTeams = roundOrder.length ? roundOrder.map((id) => teams.find((team) => team.id === id)).filter(Boolean) : teams;
-  return <header className="arcade-hud border-b border-white/10 px-6 py-4"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4"><button className="text-sm font-bold text-slate-400 hover:text-white" onClick={onMainMenu} type="button">← Exit</button><div className="text-center"><p className="text-xs font-black uppercase tracking-[0.25em] text-cyan-300">Round {roundNumber} of {rounds}</p><p className="mt-1 text-xs text-slate-400">{lastTransition}</p></div><div className="flex gap-2">{orderedTeams.map((team) => { const config = TEAM_COLOR_CONFIG[team.color] || TEAM_COLOR_CONFIG.red; return <div className={`rounded-xl border px-3 py-2 text-center shadow-lg ${team.id === highlightedTeamId ? "ring-2 ring-cyan-300 ring-offset-2 ring-offset-[#090A0F]" : ""} ${team.hearts === 0 ? "opacity-40 grayscale" : ""}`} key={team.id} style={{ background: `linear-gradient(145deg, ${config.panel}, ${config.value}cc)`, borderColor: team.id === highlightedTeamId ? "#67e8f9" : config.value }}><p className="max-w-24 truncate text-xs font-black text-white">{team.name}</p><Hearts count={team.hearts} /></div>; })}</div></div></header>;
+  return <header className="arcade-hud border-b border-white/10 px-6 py-4"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4"><ExitGameButton onConfirm={onMainMenu} /><div className="text-center"><p className="text-xs font-black uppercase tracking-[0.25em] text-cyan-300">Round {roundNumber} of {rounds}</p><p className="mt-1 text-xs text-slate-400">{lastTransition}</p></div><div className="flex flex-wrap justify-end gap-3">{orderedTeams.map((team) => { const config = TEAM_COLOR_CONFIG[team.color] || TEAM_COLOR_CONFIG.red; return <div aria-label={`${team.name}, ${team.points} points, ${team.hearts} of 5 hearts`} className={`min-w-32 rounded-xl border px-4 py-3 text-center shadow-lg ${team.id === highlightedTeamId ? "ring-2 ring-cyan-300 ring-offset-2 ring-offset-[#090A0F]" : ""} ${team.hearts === 0 ? "opacity-40 grayscale" : ""}`} key={team.id} style={{ background: `linear-gradient(145deg, ${config.panel}, ${config.value}cc)`, borderColor: team.id === highlightedTeamId ? "#67e8f9" : config.value }}><div className="flex items-center justify-center gap-2"><span aria-hidden="true" className="text-lg font-black leading-none">{config.symbol}</span><p className="max-w-28 truncate text-sm font-black text-white">{team.name}</p></div><div className="mt-2 flex items-center justify-center gap-3"><Hearts count={team.hearts} /><span className="text-sm font-black text-white">{team.points} pts</span></div></div>; })}</div></div></header>;
 }
 
 function StandingsModal({ game, onNextRound }) {
@@ -164,7 +205,7 @@ function StandingsModal({ game, onNextRound }) {
 function VictoryScreen({ teams, onMainMenu }) {
   const survivors = teams.filter((team) => team.hearts > 0);
   const winner = [...(survivors.length ? survivors : teams)].sort((a, b) => b.points - a.points)[0];
-  return <main className="arcade-game flex min-h-screen flex-col items-center bg-[#090A0F] px-6 py-12 text-white"><p className="text-sm font-bold uppercase tracking-[0.35em] text-cyan-300">Battle complete</p><h1 className="mt-4 text-6xl font-black text-fuchsia-300">Victory!</h1><p className="mt-4 text-center text-slate-300">{survivors.length === 1 ? `${winner.name} is the last team standing.` : "All scheduled rounds are complete."}</p><div className="mt-8 w-full max-w-sm"><HybridScienceCard color={winner.color} hearts={winner.hearts} isActiveTurn isEliminated={winner.hearts === 0} points={winner.points} teamName={winner.name} /></div><button className="arcade-launch-button mt-10 rounded-xl px-8 py-4 font-black" onClick={onMainMenu} type="button">Go to main menu</button></main>;
+  return <main className="arcade-game relative flex min-h-screen flex-col items-center bg-[#090A0F] px-6 py-12 text-white"><ExitGameButton className="absolute left-6 top-6 text-sm font-bold text-slate-400 hover:text-white" onConfirm={onMainMenu} /><p className="text-sm font-bold uppercase tracking-[0.35em] text-cyan-300">Battle complete</p><h1 className="mt-4 text-6xl font-black text-fuchsia-300">Victory!</h1><p className="mt-4 text-center text-slate-300">{survivors.length === 1 ? `${winner.name} is the last team standing.` : "All scheduled rounds are complete."}</p><div className="mt-8 w-full max-w-sm"><HybridScienceCard color={winner.color} hearts={winner.hearts} isActiveTurn isEliminated={winner.hearts === 0} points={winner.points} teamName={winner.name} /></div><ExitGameButton className="arcade-launch-button mt-10 rounded-xl px-8 py-4 font-black" label="Go to main menu" onConfirm={onMainMenu} /></main>;
 }
 
 function BattleGame({ game, onMainMenu, onUpdate }) {
@@ -228,7 +269,11 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
       const points = isCorrect ? team.points + (["Hard", "Difficult"].includes(activeQuestion.difficultyLabel) ? 20 : 10) : team.points;
       return { ...team, points, questionsAsked: team.questionsAsked + 1, hearts: isCorrect ? team.hearts : Math.max(0, team.hearts - 1) };
     });
-    setAnswerResult({ isCorrect, timedOut });
+    setAnswerResult({
+      isCorrect,
+      timedOut,
+      explanation: activeQuestion.explanation || "No explanation was provided for this question.",
+    });
     onUpdate({ ...game, teams: updatedTeams });
   }
 
@@ -285,5 +330,5 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
   if (game.phase === "rolling") return <main className="arcade-game flex min-h-screen flex-col bg-[#090A0F] text-white"><TeamStrip {...game} highlightedTeamId={null} onMainMenu={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-6 text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Round {game.roundNumber} · rolling</p><h1 className="mt-4 text-5xl font-black text-white">Who goes first?</h1><div className={`mt-8 grid h-36 w-36 place-items-center rounded-3xl border-4 text-center ${isRolling ? "dice-rolling" : ""}`} style={diceStyle}><span className="max-w-28 truncate px-2 text-2xl font-black text-white">{diceFace}</span></div><p className="mt-6 text-slate-400">The dice are locking the order for this round.</p></section></main>;
   if (game.phase === "orderReady") return <main className="arcade-game flex min-h-screen flex-col bg-[#090A0F] text-white"><TeamStrip {...game} highlightedTeamId={null} onMainMenu={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-6 text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Round {game.roundNumber} · order locked</p><h1 className="mt-4 text-5xl font-black text-white">You&apos;re up!</h1><p className="mt-4 text-slate-400">The dice have set the sequence. Make sure every team is ready.</p><div className="mt-8 w-full rounded-2xl border border-fuchsia-400/60 bg-slate-900/90 p-5 text-left shadow-2xl shadow-fuchsia-950/30"><p className="text-center text-xs font-black uppercase tracking-[0.25em] text-fuchsia-300">Answering order</p><ol className="mt-4 space-y-2">{game.roundOrder.map((teamId, index) => { const team = game.teams.find((item) => item.id === teamId); return <li className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${teamId === game.answeringTeamId ? "border-cyan-300 bg-cyan-400/10" : "border-slate-700 bg-slate-950/70"}`} key={teamId}><span className="w-6 text-center font-black text-fuchsia-300">{index + 1}</span><span className="font-black text-white">{team?.name}</span>{index === 0 && <span className="ml-auto text-xs font-bold uppercase tracking-wider text-cyan-300">First up</span>}</li>; })}</ol></div><button className="arcade-launch-button mt-8 rounded-xl px-10 py-4 font-black" onClick={() => onUpdate({ ...game, phase: "question" })} type="button">Ready to play →</button></section></main>;
 
-  return <main className="arcade-game min-h-screen bg-[#090A0F] pb-10 text-white"><TeamStrip {...game} highlightedTeamId={game.answeringTeamId} onMainMenu={onMainMenu} /><section className="arcade-arena mx-auto mt-8 w-full max-w-4xl rounded-2xl border border-slate-700/60 bg-slate-900/80 px-6 py-6 shadow-2xl sm:px-8 sm:py-8"><div className="flex items-center justify-between gap-4"><p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-300">Question {game.questionNumber} · {activeQuestion.category}</p>{game.timeLimit !== null && <span className="rounded-full border border-amber-400 px-4 py-2 text-xl font-black">{secondsLeft}s</span>}</div><p className="mt-2 text-sm font-bold text-fuchsia-300">{activeTeam?.name}&apos;s turn</p><h1 className="mt-4 text-2xl font-extrabold text-white sm:text-3xl">{activeQuestion.questionText}</h1><div className="mt-6 grid gap-3 sm:grid-cols-2">{activeQuestion.options.map((answer, index) => <button className={`rounded-xl border p-4 text-left text-lg font-semibold ${answerResult && index === activeQuestion.correctAnswerIndex ? "answer-correct" : selectedAnswer === index && answerResult ? "answer-incorrect" : "border-slate-700 bg-slate-800/90 text-slate-100 hover:border-cyan-400"}`} disabled={Boolean(answerResult)} key={answer} onClick={() => { setSelectedAnswer(index); resolveAnswer(index === activeQuestion.correctAnswerIndex); }} type="button"><span className="mr-3 text-cyan-300">{String.fromCharCode(65 + index)}.</span>{answer}</button>)}</div></section>{answerResult && <div className="fixed inset-0 z-[70] grid place-items-center bg-[#090A0F]/85 p-6 backdrop-blur-sm"><section aria-modal="true" className="w-full max-w-xl rounded-3xl border-2 border-fuchsia-400 bg-slate-950 p-8 text-center" role="dialog"><p className="text-xs font-black uppercase tracking-[0.3em] text-cyan-300">{answerResult.isCorrect ? "Correct" : "Wrong answer"}</p><h2 className="mt-4 text-3xl font-black text-white">{answerResult.isCorrect ? `${activeTeam.name} earns points!` : `${activeTeam.name} loses 1 heart.`}</h2>{!answerResult.isCorrect && <p className="mt-5 text-lg text-emerald-300">Correct answer: {activeQuestion.options[activeQuestion.correctAnswerIndex]}</p>}<button className="arcade-launch-button mt-8 w-full rounded-xl px-5 py-4 font-black" onClick={nextQuestion} type="button">Continue</button></section></div>}</main>;
+  return <main className="arcade-game min-h-screen bg-[#090A0F] pb-10 text-white"><TeamStrip {...game} highlightedTeamId={game.answeringTeamId} onMainMenu={onMainMenu} /><section className="arcade-arena mx-auto mt-8 w-full max-w-4xl rounded-2xl border border-slate-700/60 bg-slate-900/80 px-6 py-6 shadow-2xl sm:px-8 sm:py-8"><div className="flex items-center justify-between gap-4"><p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-300">Question {game.questionNumber} · {activeQuestion.category}</p>{game.timeLimit !== null && <span className="rounded-full border border-amber-400 px-4 py-2 text-xl font-black">{secondsLeft}s</span>}</div><p className="mt-2 text-sm font-bold text-fuchsia-300">{activeTeam?.name}&apos;s turn</p><h1 className="mt-4 text-2xl font-extrabold text-white sm:text-3xl">{activeQuestion.questionText}</h1><div className="mt-6 grid gap-3 sm:grid-cols-2">{activeQuestion.options.map((answer, index) => <button className={`rounded-xl border p-4 text-left text-lg font-semibold ${answerResult && index === activeQuestion.correctAnswerIndex ? "answer-correct" : selectedAnswer === index && answerResult ? "answer-incorrect" : "border-slate-700 bg-slate-800/90 text-slate-100 hover:border-cyan-400"}`} disabled={Boolean(answerResult)} key={answer} onClick={() => { setSelectedAnswer(index); resolveAnswer(index === activeQuestion.correctAnswerIndex); }} type="button"><span className="mr-3 text-cyan-300">{String.fromCharCode(65 + index)}.</span>{answer}</button>)}</div></section>{answerResult && <div className="fixed inset-0 z-[70] grid place-items-center bg-[#090A0F]/85 p-6 backdrop-blur-sm"><section aria-modal="true" className="w-full max-w-xl rounded-3xl border-2 border-fuchsia-400 bg-slate-950 p-8 text-center" role="dialog"><p className="text-xs font-black uppercase tracking-[0.3em] text-cyan-300">{answerResult.isCorrect ? "Correct" : "Wrong answer"}</p><h2 className="mt-4 text-3xl font-black text-white">{answerResult.isCorrect ? `${activeTeam.name} earns points!` : `${activeTeam.name} loses 1 heart.`}</h2><p className="mt-5 text-lg text-emerald-300">Correct answer: {activeQuestion.options[activeQuestion.correctAnswerIndex]}</p><div className="mt-5 rounded-xl border border-cyan-400/30 bg-cyan-400/10 p-4 text-left"><p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Explanation</p><p className="mt-2 leading-6 text-slate-200">{answerResult.explanation || "No explanation was provided for this question."}</p></div><button className="arcade-launch-button mt-8 w-full rounded-xl px-5 py-4 font-black" onClick={nextQuestion} type="button">Continue</button></section></div>}</main>;
 }
