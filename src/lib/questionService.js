@@ -75,6 +75,18 @@ function fallbackQuestionsForCategory(categoryName) {
   return matchingQuestions.length > 0 ? matchingQuestions : MOCK_QUESTIONS;
 }
 
+function getExplanation(rawQuestion) {
+  const explanation = rawQuestion?.explanation
+    ?? rawQuestion?.explanation_text
+    ?? rawQuestion?.explanationText
+    ?? rawQuestion?.answer_explanation
+    ?? rawQuestion?.explaination;
+
+  if (typeof explanation === "string") return explanation.trim();
+  if (explanation === null || explanation === undefined) return "";
+  return String(explanation).trim();
+}
+
 function getMockCategories(count) {
   return [...new Set(MOCK_QUESTIONS.map((question) => question.category))].slice(0, count);
 }
@@ -254,7 +266,7 @@ export function formatQuestionForGame(rawQuestion) {
       questionText: rawQuestion.question_text,
       options,
       correctAnswerIndex: options.indexOf(rawQuestion.correct_answer),
-      explanation: rawQuestion.explanation || "",
+      explanation: getExplanation(rawQuestion),
     };
   } catch (error) {
     console.error("Unable to format the Supabase question. Using a local practice question.", error);
@@ -285,7 +297,7 @@ function formatQuestionForGameWithoutFallback(rawQuestion) {
     questionText: rawQuestion.question_text,
     options,
     correctAnswerIndex: options.indexOf(rawQuestion.correct_answer),
-    explanation: rawQuestion.explanation || "",
+    explanation: getExplanation(rawQuestion),
   };
 }
 
