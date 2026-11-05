@@ -26,13 +26,13 @@ const MODES = [
 
 export default function GamePage() {
   return (
-    <main className="arcade-shell relative flex h-screen flex-col justify-between overflow-hidden bg-[#090A0F] px-5 py-5 text-white sm:px-8 sm:py-6">
+    <main className="arcade-shell relative flex h-screen flex-col justify-between overflow-hidden bg-[#090A0F] px-5 pb-24 pt-5 text-white sm:px-8 sm:pt-6">
       <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
       <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
         <header className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
-          <Link className="text-sm font-semibold text-slate-400 transition-colors hover:text-cyan-300" href="/">
+          <Link className="rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-300 shadow-lg transition-all hover:border-cyan-400/80 hover:text-white" href="/">
             ← Back to game room
           </Link>
           <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
@@ -54,7 +54,7 @@ export default function GamePage() {
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {MODES.map((mode) => (
               <Link
-                className="group rounded-2xl border border-slate-700/60 bg-slate-900/80 p-5 text-left shadow-2xl shadow-fuchsia-950/20 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:shadow-fuchsia-950/40"
+                className="group rounded-2xl border border-slate-700/60 bg-slate-900/80 p-5 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/80 hover:shadow-cyan-950/40"
                 key={mode.id}
                 href={`/game/${mode.id}`}
               >
