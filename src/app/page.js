@@ -2,12 +2,12 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="arcade-shell relative flex min-h-screen flex-col justify-between overflow-hidden bg-[#090A0F] px-5 py-5 text-white sm:px-8 sm:py-6">
+    <main className="arcade-shell relative flex h-screen flex-col justify-between overflow-hidden bg-[#090A0F] px-5 pb-24 pt-5 text-white sm:px-8 sm:pt-6">
       <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-4xl flex-col">
+      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
         <header className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-cyan-300 to-violet-500 text-xl font-black text-[#090A0F] shadow-lg shadow-cyan-500/20">
@@ -33,7 +33,7 @@ export default function Home() {
           </p>
 
           <Link
-            className="group mt-7 w-full max-w-md rounded-2xl border border-slate-700/60 bg-slate-900/80 p-6 text-left shadow-2xl shadow-fuchsia-950/20 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:shadow-fuchsia-950/40"
+            className="group mt-7 w-full max-w-md rounded-2xl border border-slate-700/60 bg-slate-900/80 p-6 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/80 hover:shadow-cyan-950/40"
             href="/game"
           >
             <div className="flex items-start justify-between gap-4">
