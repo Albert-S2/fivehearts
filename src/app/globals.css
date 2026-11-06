@@ -322,6 +322,13 @@ input:focus-visible {
   background-color: rgb(51 65 85 / 0.95);
 }
 
+.arcade-game .arcade-panel button.is-selected {
+  border-color: #67e8f9 !important;
+  background-color: rgb(8 47 73 / 0.95) !important;
+  color: #cffafe !important;
+  box-shadow: 0 0 0 2px rgb(34 211 238 / 0.35), 0 0 18px rgb(34 211 238 / 0.2);
+}
+
 .arcade-game .arcade-panel button.bg-amber-400,
 .arcade-game .arcade-panel button[class*="bg-amber-400"] {
   border-color: transparent;
