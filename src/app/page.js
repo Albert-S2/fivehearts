@@ -15,10 +15,6 @@ export default function Home() {
             </span>
             <div>
               <span className="block text-lg font-black tracking-tight">Five Hearts Quiz</span>
-              <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_10px_rgb(74_222_128_/_0.8)]" />
-                Live room
-              </span>
             </div>
           </div>
         </header>
