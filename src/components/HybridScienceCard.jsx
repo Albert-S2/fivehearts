@@ -34,7 +34,7 @@ export default function HybridScienceCard({
 
   return (
     <article
-      className={`relative min-h-24 w-full ${extraCompact ? "max-w-[280px]" : compact ? "max-w-[360px]" : "max-w-[520px]"} overflow-hidden rounded-xl border ${config.surface} shadow-md transition-all duration-300 ease-out ${config.border} ${isActiveTurn ? `scale-105 ring-4 ${config.active}` : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
+      className={`team-textured-card relative min-h-24 w-full ${extraCompact ? "max-w-[280px]" : compact ? "max-w-[360px]" : "max-w-[520px]"} overflow-hidden rounded-xl border ${config.surface} shadow-md transition-all duration-300 ease-out ${config.border} ${isActiveTurn ? `scale-105 ring-4 ${config.active}` : ""} ${isEliminated ? "grayscale opacity-40" : ""}`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-transparent to-ink-blue/5" />
       <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center p-2">
