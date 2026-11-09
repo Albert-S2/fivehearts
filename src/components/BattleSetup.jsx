@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import HybridScienceCard, { TEAM_COLOR_CONFIG } from "./HybridScienceCard";
 import { fetchQuestionsForGame } from "../lib/questionService";
 
@@ -19,8 +19,10 @@ const RULES = [
 ];
 
 function snapQuestionCount(value, teamCount) {
+  const minimum = Math.ceil(MIN_QUESTIONS / teamCount) * teamCount;
+  const maximum = Math.floor(MAX_QUESTIONS / teamCount) * teamCount;
   const nearest = Math.round(Number(value) / teamCount) * teamCount;
-  return Math.min(MAX_QUESTIONS, Math.max(MIN_QUESTIONS, nearest));
+  return Math.min(maximum, Math.max(minimum, nearest));
 }
 
 function padQuestions(questions, count) {
@@ -28,13 +30,80 @@ function padQuestions(questions, count) {
   return Array.from({ length: count }, (_, index) => questions[index % questions.length]);
 }
 
-export default function BattleSetup() {
+function DuelSetup({ questionCount, setQuestionCount, timeLimit, setTimeLimit, teamNames, setTeamNames, isCreating, onCreate }) {
+  return (
+    <main className="arcade-shell arcade-game relative flex min-h-screen flex-col overflow-x-hidden bg-[#090A0F] px-5 pb-24 pt-5 text-white sm:px-8 sm:pt-6">
+      <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
+      <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
+      <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col">
+        <header className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
+          <Link className="inline-flex rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-300 shadow-lg transition-all hover:border-cyan-400/80 hover:text-white" href="/game">← Back to modes</Link>
+          <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">Duel setup</span>
+        </header>
+
+        <section className="flex flex-1 flex-col justify-center py-5 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Five Hearts Quiz · Duel</p>
+          <h1 className="mt-3 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-4xl font-black text-transparent sm:text-5xl">Red vs Blue</h1>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">Set your teams and match length. Dice decide who answers first each round.</p>
+
+          <div className="mx-auto mt-5 grid w-full max-w-5xl items-center gap-4 lg:grid-cols-[minmax(150px,0.7fr)_minmax(220px,1fr)_minmax(150px,0.7fr)] xl:grid-cols-[240px_minmax(320px,1fr)_240px]">
+            {["red", "blue"].map((color, index) => {
+              const config = TEAM_COLOR_CONFIG[color];
+              return (
+                <Fragment key={color}>
+                  <article className={`team-textured-card flex min-h-[170px] w-full flex-col justify-between rounded-2xl border p-4 text-left shadow-2xl lg:row-start-1 ${index === 0 ? "lg:col-start-1" : "lg:col-start-3"}`} style={{ background: `linear-gradient(145deg, ${config.panel}, ${config.value}cc)`, borderColor: config.value }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <span aria-hidden="true" className="text-4xl font-black leading-none">{config.symbol}</span>
+                      <span className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-xs font-black uppercase tracking-[0.16em]">{config.name} team</span>
+                    </div>
+                    <label className="mt-5 block text-xs font-bold uppercase tracking-[0.16em] text-white/75">
+                      Team name
+                      <input className="mt-2 w-full rounded-xl border border-white/25 bg-black/25 px-4 py-3 text-base font-bold normal-case tracking-normal text-white outline-none placeholder:text-white/55 focus:border-white/70" maxLength={16} onChange={(event) => setTeamNames((names) => names.map((name, nameIndex) => nameIndex === index ? event.target.value : name))} placeholder={`${config.name} Team`} type="text" value={teamNames[index]} />
+                    </label>
+                  </article>
+
+                  {index === 0 && (
+                    <section className="arcade-panel flex w-full flex-col justify-center rounded-2xl border border-slate-700/60 bg-slate-900/90 p-4 text-left shadow-2xl sm:p-5 lg:col-start-2 lg:row-start-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className="text-base font-black text-white">Questions</h2>
+                        <span className="rounded-full bg-cyan-400 px-3 py-1 text-lg font-black text-slate-950">{questionCount}</span>
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-slate-400">Even numbers give each team the same turns.</p>
+                      <label className="mt-3 block">
+                        <span className="sr-only">Number of questions</span>
+                        <input aria-label="Number of questions" className="w-full accent-cyan-400" max={MAX_QUESTIONS} min={MIN_QUESTIONS} onChange={(event) => setQuestionCount(snapQuestionCount(event.target.value, 2))} step="2" type="range" value={questionCount} />
+                        <span className="mt-1 flex justify-between text-[10px] font-bold text-slate-500"><span>{MIN_QUESTIONS}</span><span>{MAX_QUESTIONS}</span></span>
+                      </label>
+                      <p className="mt-2 text-center text-sm font-bold text-slate-300">{questionCount / 2} rounds per team</p>
+
+                      <fieldset className="mt-4 border-t border-white/10 pt-3">
+                        <legend className="text-sm font-black text-white">Time limit</legend>
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                          {[{ label: "60 seconds", value: 60 }, { label: "No limit", value: null }].map((option) => <button aria-pressed={timeLimit === option.value} className={`rounded-xl border px-3 py-2.5 text-xs font-bold transition-all ${timeLimit === option.value ? "is-selected border-cyan-300 bg-cyan-400/20 text-cyan-100" : "border-slate-700 bg-slate-900/80 text-slate-200 hover:border-cyan-400/80"}`} key={option.label} onClick={() => setTimeLimit(option.value)} type="button">{option.label}</button>)}
+                        </div>
+                      </fieldset>
+                    </section>
+                  )}
+                  {index === 0 && <button className="arcade-launch-button duel-start-button w-full rounded-xl px-5 py-3.5 font-black disabled:cursor-wait disabled:opacity-60 lg:col-start-2 lg:row-start-2" disabled={isCreating} onClick={onCreate} type="button">{isCreating ? "Loading questions..." : "Start Duel · Roll Dice"}</button>}
+                </Fragment>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+export default function BattleSetup({ mode = "battle" }) {
   const router = useRouter();
-  const [teamCount, setTeamCount] = useState(3);
+  const isDuel = mode === "duel";
+  const [teamCount, setTeamCount] = useState(isDuel ? 2 : 3);
   const [questionCount, setQuestionCount] = useState(30);
   const [timeLimit, setTimeLimit] = useState(60);
-  const [teamColors, setTeamColors] = useState(["red", "blue", "yellow"]);
-  const [teamNames, setTeamNames] = useState(["Team 1", "Team 2", "Team 3"]);
+  const [teamColors, setTeamColors] = useState(isDuel ? ["red", "blue"] : ["red", "blue", "yellow"]);
+  const [teamNames, setTeamNames] = useState(isDuel ? ["Red Team", "Blue Team"] : ["Team 1", "Team 2", "Team 3"]);
   const [game, setGame] = useState(null);
   const [isCreatingBattle, setIsCreatingBattle] = useState(false);
   const [showRules, setShowRules] = useState(true);
@@ -42,11 +111,11 @@ export default function BattleSetup() {
   const [setupStep, setSetupStep] = useState("settings");
 
   function resetBattleState() {
-    setTeamCount(3);
+    setTeamCount(isDuel ? 2 : 3);
     setQuestionCount(30);
     setTimeLimit(60);
-    setTeamColors(["red", "blue", "yellow"]);
-    setTeamNames(["Team 1", "Team 2", "Team 3"]);
+    setTeamColors(isDuel ? ["red", "blue"] : ["red", "blue", "yellow"]);
+    setTeamNames(isDuel ? ["Red Team", "Blue Team"] : ["Team 1", "Team 2", "Team 3"]);
     setGame(null);
     setIsCreatingBattle(false);
     setShowRules(true);
@@ -76,6 +145,7 @@ export default function BattleSetup() {
     }
 
     setGame({
+      mode,
       phase: "dashboard",
       teams: teamColors.slice(0, teamCount).map((color, index) => ({
         id: `team-${index + 1}`,
@@ -107,7 +177,7 @@ export default function BattleSetup() {
     const [icon, eyebrow, title, body, accent] = RULES[ruleIndex];
     const isLastRule = ruleIndex === RULES.length - 1;
     return (
-      <main className="arcade-shell arcade-game relative flex h-screen flex-col overflow-hidden bg-[#090A0F] px-5 pb-24 pt-5 text-white sm:px-8">
+      <main className={`arcade-shell arcade-game relative flex flex-col bg-[#090A0F] px-5 pb-24 text-white sm:px-8 ${isDuel ? "min-h-screen overflow-y-auto pt-3" : "h-screen overflow-hidden pt-5"}`}>
         <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
         <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
         <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
@@ -116,29 +186,33 @@ export default function BattleSetup() {
             <Link className="inline-flex rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-300 shadow-lg transition-all hover:border-cyan-400/80 hover:text-white" href="/game">← Back to modes</Link>
             <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">How to play</span>
           </header>
-          <section className="flex min-h-0 flex-1 flex-col items-center justify-center py-8 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Five Hearts Quiz · Battle</p>
-            <h1 className="mt-3 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-6xl">Know the play</h1>
+          <section className={`flex min-h-0 flex-1 flex-col items-center justify-center text-center ${isDuel ? "py-4" : "py-8 lg:py-4"}`}>
+            <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Five Hearts Quiz · {isDuel ? "Duel" : "Battle"}</p>
+            <h1 className={`${isDuel ? "mt-2 text-3xl sm:text-5xl" : "mt-3 text-4xl sm:text-6xl"} bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text font-black tracking-tight text-transparent`}>Know the play</h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">Five quick cards to get everyone ready before the first question.</p>
-            <article className="mt-7 w-full max-w-xl rounded-2xl border border-slate-700/60 bg-slate-900/80 p-7 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/80 sm:p-9">
-              <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${accent} text-3xl font-black text-white shadow-lg`}>{icon}</div>
-              <p className="mt-7 text-xs font-bold uppercase tracking-[0.28em] text-cyan-300">{eyebrow}</p>
-              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">{title}</h2>
-              <p className="mt-4 text-base leading-7 text-slate-300">{body}</p>
+            <article className={`${isDuel ? "mt-4 p-5 sm:p-6" : "mt-7 p-7 sm:p-9 lg:mt-5 lg:p-6"} w-full max-w-xl rounded-2xl border border-slate-700/60 bg-slate-900/80 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/80`}>
+              <div className={`grid ${isDuel ? "h-12 w-12 text-2xl" : "h-14 w-14 text-3xl"} place-items-center rounded-2xl bg-gradient-to-br ${accent} font-black text-white shadow-lg`}>{icon}</div>
+              <p className={`${isDuel ? "mt-4" : "mt-7"} text-xs font-bold uppercase tracking-[0.28em] text-cyan-300`}>{eyebrow}</p>
+              <h2 className={`${isDuel ? "mt-2 text-2xl sm:text-3xl" : "mt-3 text-3xl sm:text-4xl"} font-black text-white`}>{title}</h2>
+              <p className={`${isDuel ? "mt-3 text-sm leading-6" : "mt-4 text-base leading-7"} text-slate-300`}>{body}</p>
             </article>
-            <div className="mt-6 flex items-center gap-2" aria-label={`Rule ${ruleIndex + 1} of ${RULES.length}`}>
+            <div className={`${isDuel ? "mt-4" : "mt-6 lg:mt-4"} flex items-center gap-2`} aria-label={`Rule ${ruleIndex + 1} of ${RULES.length}`}>
               {RULES.map((rule, index) => <span className={`h-2 rounded-full transition-all ${index === ruleIndex ? "w-8 bg-cyan-400" : "w-2 bg-slate-700"}`} key={rule[2]} />)}
             </div>
-            <div className="mt-6 flex w-full max-w-xl items-center justify-between gap-4">
+            <div className={`${isDuel ? "mt-4" : "mt-6 lg:mt-4"} flex w-full max-w-xl items-center justify-between gap-4`}>
               <button className="text-sm font-bold text-slate-400 hover:text-white" onClick={() => setShowRules(false)} type="button">Skip rules</button>
-              <button className="arcade-launch-button rounded-xl px-7 py-3 text-sm font-extrabold" onClick={() => isLastRule ? setShowRules(false) : setRuleIndex((index) => index + 1)} type="button">
-                {isLastRule ? "Set up battle →" : "Next rule →"}
+              <button className={`arcade-launch-button rounded-xl text-sm font-extrabold ${isDuel ? "px-5 py-2.5" : "px-7 py-3"}`} onClick={() => isLastRule ? setShowRules(false) : setRuleIndex((index) => index + 1)} type="button">
+                {isLastRule ? `Set up ${isDuel ? "duel" : "battle"} →` : "Next rule →"}
               </button>
             </div>
           </section>
         </div>
       </main>
     );
+  }
+
+  if (isDuel) {
+    return <DuelSetup isCreating={isCreatingBattle} onCreate={createBattle} questionCount={questionCount} setQuestionCount={setQuestionCount} setTeamNames={setTeamNames} setTimeLimit={setTimeLimit} teamNames={teamNames} timeLimit={timeLimit} />;
   }
 
   return (
@@ -222,11 +296,12 @@ function StandingsModal({ game, onNextRound }) {
   return <div className="arcade-summary fixed inset-0 z-[80] grid place-items-center bg-[#090A0F]/85 p-5 backdrop-blur-md"><section aria-labelledby="round-summary-title" aria-modal="true" className="w-full max-w-3xl rounded-3xl border-2 border-cyan-400/60 bg-slate-950 p-6 shadow-2xl shadow-cyan-950/40 sm:p-8" role="dialog"><div className="text-center"><p className="text-xs font-black uppercase tracking-[0.25em] text-cyan-300">Round {game.roundNumber}</p><h2 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl" id="round-summary-title">Standings</h2></div><div className="mt-7 grid gap-3">{[...game.teams].sort((a, b) => b.points - a.points).map((team, index) => <div className="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/80 p-3" key={team.id}><span className="w-7 text-center text-lg font-black text-fuchsia-300">#{index + 1}</span><div className="min-w-0 flex-1"><p className="truncate font-black text-white">{team.name}</p><p className="text-xs text-slate-400">{team.hearts === 0 ? "ELIMINATED" : `${team.hearts} hearts remaining`}</p></div><p className="text-2xl font-black text-cyan-300">{team.points}</p></div>)}</div><button className="arcade-launch-button mt-7 w-full rounded-xl px-5 py-4 font-black" onClick={onNextRound} type="button">{game.roundNumber >= game.rounds ? "See final results" : "Start Next Round · Roll Dice"}</button></section></div>;
 }
 
-function VictoryScreen({ teams, onMainMenu }) {
+function VictoryScreen({ teams, onMainMenu, mode = "battle" }) {
+  const gameName = mode === "duel" ? "Duel" : "Battle";
   const survivors = teams.filter((team) => team.hearts > 0);
   const winner = [...(survivors.length ? survivors : teams)].sort((a, b) => b.points - a.points)[0];
   const winnerConfig = TEAM_COLOR_CONFIG[winner.color] || TEAM_COLOR_CONFIG.red;
-  return <main className="arcade-shell arcade-game relative flex min-h-screen flex-col overflow-hidden bg-[#090A0F] px-6 pb-24 pt-6 text-white"><div aria-hidden="true" className="arcade-orb arcade-orb-cyan" /><div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" /><div className="relative z-10 flex min-h-0 flex-1 flex-col"><ExitGameButton className="self-start text-sm font-bold text-slate-400 hover:text-white" onConfirm={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Battle complete</p><h1 className="mt-4 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-6xl font-black tracking-tight text-transparent">Victory!</h1><p className="mt-4 text-slate-300">{survivors.length === 1 ? `${winner.name} is the last team standing.` : "All scheduled rounds are complete."}</p><div className="team-textured-card mt-8 w-full rounded-3xl border border-cyan-400/30 bg-slate-900/80 p-6 shadow-2xl shadow-fuchsia-950/30 backdrop-blur-xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl border-2 text-4xl font-black shadow-lg" style={{ background: `linear-gradient(145deg, ${winnerConfig.panel}, ${winnerConfig.value}dd)`, borderColor: winnerConfig.value }}>{winnerConfig.symbol}</div><p className="mt-5 text-xs font-black uppercase tracking-[0.3em] text-cyan-300">Winning team</p><h2 className="mt-2 text-3xl font-black text-white">{winner.name}</h2><p className="mt-4 text-5xl font-black text-cyan-300">{winner.points}<span className="ml-2 text-base uppercase tracking-wider text-slate-400">points</span></p><div className="mt-4 flex justify-center"><Hearts count={winner.hearts} /></div></div><ExitGameButton className="arcade-launch-button mt-8 block rounded-xl px-8 py-4 font-black" label="Go to main menu" onConfirm={onMainMenu} /></section></div></main>;
+  return <main className="arcade-shell arcade-game relative flex min-h-screen flex-col overflow-hidden bg-[#090A0F] px-6 pb-24 pt-6 text-white"><div aria-hidden="true" className="arcade-orb arcade-orb-cyan" /><div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" /><div className="relative z-10 flex min-h-0 flex-1 flex-col"><ExitGameButton className="self-start text-sm font-bold text-slate-400 hover:text-white" onConfirm={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">{gameName} complete</p><h1 className="mt-4 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-6xl font-black tracking-tight text-transparent">Victory!</h1><p className="mt-4 text-slate-300">{survivors.length === 1 ? `${winner.name} is the last team standing.` : "All scheduled rounds are complete."}</p><div className="team-textured-card mt-8 w-full rounded-3xl border border-cyan-400/30 bg-slate-900/80 p-6 shadow-2xl shadow-fuchsia-950/30 backdrop-blur-xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl border-2 text-4xl font-black shadow-lg" style={{ background: `linear-gradient(145deg, ${winnerConfig.panel}, ${winnerConfig.value}dd)`, borderColor: winnerConfig.value }}>{winnerConfig.symbol}</div><p className="mt-5 text-xs font-black uppercase tracking-[0.3em] text-cyan-300">Winning team</p><h2 className="mt-2 text-3xl font-black text-white">{winner.name}</h2><p className="mt-4 text-5xl font-black text-cyan-300">{winner.points}<span className="ml-2 text-base uppercase tracking-wider text-slate-400">points</span></p><div className="mt-4 flex justify-center"><Hearts count={winner.hearts} /></div></div><ExitGameButton className="arcade-launch-button mt-8 block rounded-xl px-8 py-4 font-black" label="Go to main menu" onConfirm={onMainMenu} /></section></div></main>;
 }
 
 function BattleGame({ game, onMainMenu, onUpdate }) {
@@ -241,6 +316,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
   const activeQuestion = game.questions[game.questionNumber - 1];
   const activeTeam = game.teams.find((team) => team.id === game.answeringTeamId);
   const activeTeamConfig = TEAM_COLOR_CONFIG[activeTeam?.color] || TEAM_COLOR_CONFIG.red;
+  const gameName = game.mode === "duel" ? "Duel" : "Battle";
 
   useEffect(() => {
     if (game.phase !== "question" || answerResult || game.timeLimit === null) return undefined;
@@ -327,7 +403,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     onUpdate({ ...game, teams: updatedTeams, questionNumber: game.questionNumber + 1, roundTurnIndex: nextIndex, answeringTeamId: nextTeam.id, lastTransition: `${nextTeam.name} is next in the locked order.` });
   }
 
-  if (game.phase === "victory") return <VictoryScreen onMainMenu={onMainMenu} teams={game.teams} />;
+  if (game.phase === "victory") return <VictoryScreen mode={game.mode} onMainMenu={onMainMenu} teams={game.teams} />;
   if (game.phase === "summary") return <><TeamStrip {...game} highlightedTeamId={null} onMainMenu={onMainMenu} /><StandingsModal game={game} onNextRound={() => {
     if (game.roundNumber >= game.rounds) {
       onUpdate({ ...game, phase: "victory" });
@@ -346,7 +422,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     boxShadow: `0 0 45px ${rollingTeamConfig.value}80`,
   };
 
-  if (game.phase === "dashboard") return <main className="arcade-game flex min-h-screen flex-col bg-[#090A0F] text-white"><TeamStrip {...game} highlightedTeamId={null} onMainMenu={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-6 text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Battle dashboard</p><h1 className="mt-4 text-5xl font-black text-white">Ready to play?</h1><div className={`mt-8 grid h-36 w-36 place-items-center rounded-3xl border-4 text-center ${isRolling ? "dice-rolling" : ""}`} style={diceStyle}><span className="max-w-28 truncate px-2 text-2xl font-black text-white">{isRolling ? diceFace : "?"}</span></div><p className="mt-6 text-slate-400">{game.questionCount} questions · {game.rounds} rounds per team</p><button className="arcade-launch-button mt-8 rounded-xl px-8 py-4 font-black" disabled={isRolling} onClick={() => rollDice(game)} type="button">{isRolling ? "Rolling..." : "Roll Dice to Set Order"}</button></section></main>;
+  if (game.phase === "dashboard") return <main className="arcade-game flex min-h-screen flex-col bg-[#090A0F] text-white"><TeamStrip {...game} highlightedTeamId={null} onMainMenu={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-6 text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">{gameName} dashboard</p><h1 className="mt-4 text-5xl font-black text-white">Ready to play?</h1><div className={`mt-8 grid h-36 w-36 place-items-center rounded-3xl border-4 text-center ${isRolling ? "dice-rolling" : ""}`} style={diceStyle}><span className="max-w-28 truncate px-2 text-2xl font-black text-white">{isRolling ? diceFace : "?"}</span></div><p className="mt-6 text-slate-400">{game.questionCount} questions · {game.rounds} rounds per team</p><button className="arcade-launch-button mt-8 rounded-xl px-8 py-4 font-black" disabled={isRolling} onClick={() => rollDice(game)} type="button">{isRolling ? "Rolling..." : "Roll Dice to Set Order"}</button></section></main>;
 
   if (game.phase === "rolling") return <main className="arcade-game flex min-h-screen flex-col bg-[#090A0F] text-white"><TeamStrip {...game} highlightedTeamId={null} onMainMenu={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-6 text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Round {game.roundNumber} · rolling</p><h1 className="mt-4 text-5xl font-black text-white">Who goes first?</h1><div className={`mt-8 grid h-36 w-36 place-items-center rounded-3xl border-4 text-center ${isRolling ? "dice-rolling" : ""}`} style={diceStyle}><span className="max-w-28 truncate px-2 text-2xl font-black text-white">{diceFace}</span></div><p className="mt-6 text-slate-400">The dice are locking the order for this round.</p></section></main>;
   if (game.phase === "orderReady") { const startingTeam = game.teams.find((team) => team.id === game.answeringTeamId); const startingTeamConfig = TEAM_COLOR_CONFIG[startingTeam?.color] || TEAM_COLOR_CONFIG.red; return <main className="arcade-shell arcade-game relative flex min-h-screen flex-col overflow-hidden bg-[#090A0F] text-white"><div aria-hidden="true" className="arcade-orb arcade-orb-cyan" /><div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" /><div className="relative z-10 flex min-h-0 flex-1 flex-col"><TeamStrip {...game} highlightedTeamId={game.answeringTeamId} onMainMenu={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-6 py-10 text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Round {game.roundNumber} · order locked</p><div className="mt-6 w-full rounded-3xl border border-cyan-400/30 bg-slate-900/80 p-8 shadow-2xl shadow-fuchsia-950/30 backdrop-blur-xl sm:p-10"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl border-2 text-4xl font-black shadow-lg" style={{ background: `linear-gradient(145deg, ${startingTeamConfig.panel}, ${startingTeamConfig.value}dd)`, borderColor: startingTeamConfig.value }}>{startingTeamConfig.symbol}</div><h1 className="mt-6 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-5xl">{startingTeam?.name} starts!</h1><p className="mt-4 text-slate-300">The first team is ready to answer.</p><button className="arcade-launch-button mt-8 rounded-xl px-10 py-4 font-black" onClick={() => onUpdate({ ...game, phase: "question" })} type="button">Ready to play →</button></div></section></div></main>; }

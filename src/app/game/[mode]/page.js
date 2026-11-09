@@ -29,7 +29,7 @@ export default async function ModePage({ params = {} }) {
     description: "This game mode is not available yet.",
   };
 
-  if (mode === "battle") return <BattleSetup />;
+  if (mode === "battle" || mode === "duel") return <BattleSetup mode={mode} />;
 
   return (
     <main className="manga-shell flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-white">

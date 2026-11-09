@@ -373,6 +373,10 @@ input:focus-visible {
   transform: translateY(-2px);
 }
 
+.duel-start-button {
+  margin: 0;
+}
+
 .team-playing-card {
   position: relative;
   min-height: 280px;
