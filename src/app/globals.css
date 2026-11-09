@@ -11,6 +11,8 @@
   --brass: #d4a373;
   --parchment: #ffffff;
   --line: #d8d0c3;
+  --anchor-ad-height: 50px;
+  --anchor-ad-gap: 16px;
   --font-heading: Georgia, "Times New Roman", serif;
   --font-ui: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
@@ -291,6 +293,12 @@ input:focus-visible {
   isolation: isolate;
 }
 
+.arcade-shell,
+.arcade-game,
+.manga-shell {
+  padding-bottom: max(6rem, calc(var(--anchor-ad-height) + var(--anchor-ad-gap)));
+}
+
 .arcade-game .arcade-panel {
   box-shadow: 0 24px 60px rgb(2 6 23 / 0.28);
 }
@@ -345,9 +353,19 @@ input:focus-visible {
 }
 
 .arcade-launch-button {
+  display: inline-flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-block: 0.75rem;
   background: linear-gradient(110deg, #22d3ee, #d946ef, #8b5cf6) !important;
   color: #ffffff !important;
   box-shadow: 0 12px 30px rgb(217 70 239 / 0.25), inset 0 -3px 0 rgb(2 6 23 / 0.25);
+}
+
+.arcade-summary {
+  overflow-y: auto;
+  padding-bottom: calc(var(--anchor-ad-height) + var(--anchor-ad-gap));
 }
 
 .arcade-launch-button:hover {
@@ -423,6 +441,11 @@ input:focus-visible {
 }
 
 @media (min-width: 1024px) {
+  :root {
+    --anchor-ad-height: 90px;
+    --anchor-ad-gap: 24px;
+  }
+
   .arcade-action-footer {
     margin-bottom: 6.5rem;
   }
@@ -433,6 +456,10 @@ input:focus-visible {
 .arcade-game h3 {
   font-family: var(--font-ui);
   letter-spacing: -0.035em;
+}
+
+section[aria-labelledby="round-summary-title"] h2 {
+  font-family: var(--font-ui);
 }
 
 .arcade-game .bg-slate-950,
