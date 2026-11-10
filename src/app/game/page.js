@@ -4,7 +4,7 @@ const MODES = [
   {
     id: "solo",
     name: "Solo",
-    description: "Play on your own and build the highest score.",
+    description: "Play on your own and keep going until all five hearts are gone.",
     icon: "★",
     accent: "from-cyan-400/20",
   },
