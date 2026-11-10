@@ -364,7 +364,7 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     if (answerResult || !activeTeam) return;
     const updatedTeams = game.teams.map((team) => {
       if (team.id !== activeTeam.id) return team;
-      const points = isCorrect ? team.points + (["Hard", "Difficult"].includes(activeQuestion.difficultyLabel) ? 20 : 10) : team.points;
+      const points = isCorrect ? team.points + 10 : team.points;
       return { ...team, points, questionsAsked: team.questionsAsked + 1, hearts: isCorrect ? team.hearts : Math.max(0, team.hearts - 1) };
     });
     setAnswerResult({
