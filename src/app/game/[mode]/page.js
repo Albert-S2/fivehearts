@@ -30,7 +30,7 @@ export default async function ModePage({ params = {} }) {
   };
 
   if (mode === "battle" || mode === "duel" || mode === "solo") return <BattleSetup mode={mode} />;
-
+// If the mode is not one of the predefined modes, it renders a fallback UI indicating that the game mode is not available yet. This ensures that users are informed about the availability of different game modes and provides a consistent user experience across the application.
   return (
     <main className="manga-shell flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-white">
       <section className="w-full max-w-xl text-center">
