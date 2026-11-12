@@ -34,7 +34,7 @@ export default async function ModePage({ params = {} }) {
   return (
     <main className="manga-shell flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-white">
       <section className="w-full max-w-xl text-center">
-        <Link className="inline-flex rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-300 shadow-lg transition-all hover:border-cyan-400/80 hover:text-white" href="/game">
+        <Link className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3.5 py-1.5 text-xs font-semibold text-slate-400 shadow-sm transition-all duration-200 hover:text-cyan-400" href="/game">
           ← Back to modes
         </Link>
         <div className="mt-12 rounded-3xl border border-amber-400/30 bg-slate-900 p-8 shadow-2xl shadow-amber-950/20">

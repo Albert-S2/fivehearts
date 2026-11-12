@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">
+      <body className="flex h-screen flex-col justify-between overflow-hidden bg-background text-foreground">
         <Script
           async
           crossOrigin="anonymous"
@@ -32,14 +32,14 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || ""}`}
         />
-        <div className="grid min-h-screen grid-cols-1 md:grid-cols-[190px_1fr_190px]">
-          <aside className="z-20 hidden justify-center px-2 pt-8 md:flex">
+        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[190px_minmax(0,1fr)_190px]">
+          <aside className="z-20 hidden justify-center px-2 pt-8 lg:flex">
             <div className="ad-frame sticky top-8 h-[300px]">
               <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-left-sidebar" />
             </div>
           </aside>
-          <div className="min-w-0 pb-14 lg:pb-0">{children}</div>
-          <aside className="z-20 hidden justify-center px-2 pt-8 md:flex">
+          <div className="h-full min-h-0 min-w-0 overflow-hidden">{children}</div>
+          <aside className="z-20 hidden justify-center px-2 pt-8 lg:flex">
             <div className="ad-frame sticky top-8 h-[300px]">
               <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-right-sidebar" />
             </div>
