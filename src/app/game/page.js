@@ -32,7 +32,7 @@ export default function GamePage() {
       <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
       <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
         <header className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
-          <Link className="rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-300 shadow-lg transition-all hover:border-cyan-400/80 hover:text-white" href="/">
+          <Link className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3.5 py-1.5 text-xs font-semibold text-slate-400 shadow-sm transition-all duration-200 hover:text-cyan-400" href="/">
             ← Back to game room
           </Link>
           <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
@@ -51,19 +51,19 @@ export default function GamePage() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-5 grid min-h-0 grid-cols-3 gap-2 sm:mt-8 sm:gap-4">
             {MODES.map((mode) => (
               <Link
-                className="group rounded-2xl border border-slate-700/60 bg-slate-900/80 p-5 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/80 hover:shadow-cyan-950/40"
+                className="group rounded-2xl border border-slate-700/60 bg-slate-900/80 p-2.5 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:scale-[1.01] hover:border-cyan-400/80 hover:shadow-cyan-950/40 active:scale-[0.99] sm:p-4 lg:p-6"
                 key={mode.id}
                 href={`/game/${mode.id}`}
               >
-                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-cyan-300 via-fuchsia-400 to-violet-500 text-3xl font-black text-[#090A0F] shadow-lg shadow-fuchsia-500/20">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-cyan-300 via-fuchsia-400 to-violet-500 text-xl font-black text-[#090A0F] shadow-lg shadow-fuchsia-500/20 sm:h-12 sm:w-12 sm:rounded-2xl sm:text-2xl lg:h-14 lg:w-14 lg:text-3xl">
                   {mode.icon}
                 </span>
-                <h2 className="mt-5 text-2xl font-black text-white">{mode.name}</h2>
-                <p className="mt-2 min-h-12 text-sm leading-6 text-slate-400">{mode.description}</p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-black text-fuchsia-300">
+                <h2 className="mt-2 text-sm font-black text-white sm:mt-4 sm:text-xl lg:mt-5 lg:text-2xl">{mode.name}</h2>
+                <p className="mt-2 hidden min-h-12 text-sm leading-6 text-slate-400 sm:block">{mode.description}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-[10px] font-black text-fuchsia-300 transition-transform duration-300 group-hover:translate-x-1 sm:mt-4 sm:gap-2 sm:text-xs lg:mt-5 lg:text-sm">
                   Choose {mode.name}
                   <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
                 </span>
