@@ -18,6 +18,14 @@ const RULES = [
   ["★", "Round summary", "Standings between rounds", "After every team has taken a turn, review the standings before rolling the next round.", "from-fuchsia-400 to-violet-500"],
 ];
 
+const SOLO_RULES = [
+  ["♥", "The objective", "Protect your five hearts", "Your run ends when you lose all five hearts.", "from-rose-500 to-fuchsia-500"],
+  ["✦", "Correct answer", "Earn 10 points", "Every correct answer is worth 10 points, whatever the difficulty.", "from-emerald-400 to-cyan-400"],
+  ["×", "Wrong answer", "Spend one heart", "An incorrect answer costs one heart. When no hearts remain, the run is over.", "from-orange-400 to-rose-500"],
+  ["∞", "Keep going", "No question limit", "There is no round or question limit. Keep answering while you still have hearts.", "from-cyan-400 to-blue-500"],
+  ["◷", "Choose your pace", "Use a timer or play untimed", "You can keep the 60-second timer or turn it off before starting.", "from-fuchsia-400 to-violet-500"],
+];
+
 function snapQuestionCount(value, teamCount) {
   const minimum = Math.ceil(MIN_QUESTIONS / teamCount) * teamCount;
   const maximum = Math.floor(MAX_QUESTIONS / teamCount) * teamCount;
@@ -148,7 +156,7 @@ export default function BattleSetup({ mode = "battle" }) {
   const [teamNames, setTeamNames] = useState(isSolo ? ["Player"] : isDuel ? ["Red Team", "Blue Team"] : ["Team 1", "Team 2", "Team 3"]);
   const [game, setGame] = useState(null);
   const [isCreatingBattle, setIsCreatingBattle] = useState(false);
-  const [showRules, setShowRules] = useState(!isSolo);
+  const [showRules, setShowRules] = useState(true);
   const [ruleIndex, setRuleIndex] = useState(0);
   const [setupStep, setSetupStep] = useState("settings");
 
@@ -160,7 +168,7 @@ export default function BattleSetup({ mode = "battle" }) {
     setTeamNames(isSolo ? ["Player"] : isDuel ? ["Red Team", "Blue Team"] : ["Team 1", "Team 2", "Team 3"]);
     setGame(null);
     setIsCreatingBattle(false);
-    setShowRules(!isSolo);
+    setShowRules(true);
     setRuleIndex(0);
     setSetupStep("settings");
   }
@@ -217,10 +225,12 @@ export default function BattleSetup({ mode = "battle" }) {
   }
 
   if (showRules) {
-    const [icon, eyebrow, title, body, accent] = RULES[ruleIndex];
-    const isLastRule = ruleIndex === RULES.length - 1;
+    const activeRules = isSolo ? SOLO_RULES : RULES;
+    const isCompactRules = isDuel || isSolo;
+    const [icon, eyebrow, title, body, accent] = activeRules[ruleIndex];
+    const isLastRule = ruleIndex === activeRules.length - 1;
     return (
-      <main className={`arcade-shell arcade-game relative flex flex-col bg-[#090A0F] px-5 pb-24 text-white sm:px-8 ${isDuel ? "min-h-screen overflow-y-auto pt-3" : "h-screen overflow-hidden pt-5"}`}>
+      <main className={`arcade-shell arcade-game relative flex flex-col bg-[#090A0F] px-5 pb-24 text-white sm:px-8 ${isCompactRules ? "min-h-screen overflow-y-auto pt-3" : "h-screen overflow-hidden pt-5"}`}>
         <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
         <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
         <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
@@ -229,23 +239,23 @@ export default function BattleSetup({ mode = "battle" }) {
             <Link className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3.5 py-1.5 text-xs font-semibold text-slate-400 shadow-sm transition-all duration-200 hover:text-cyan-400" href="/game">← Back to modes</Link>
             <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">How to play</span>
           </header>
-          <section className={`flex min-h-0 flex-1 flex-col items-center justify-center text-center ${isDuel ? "py-4" : "py-8 lg:py-4"}`}>
-            <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Five Hearts Quiz · {isDuel ? "Duel" : "Battle"}</p>
-            <h1 className={`${isDuel ? "mt-2 text-3xl sm:text-5xl" : "mt-3 text-4xl sm:text-6xl"} bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text font-black tracking-tight text-transparent`}>Know the play</h1>
+          <section className={`flex min-h-0 flex-1 flex-col items-center justify-center text-center ${isCompactRules ? "py-4" : "py-8 lg:py-4"}`}>
+            <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Five Hearts Quiz · {isSolo ? "Solo" : isDuel ? "Duel" : "Battle"}</p>
+            <h1 className={`${isCompactRules ? "mt-2 text-3xl sm:text-5xl" : "mt-3 text-4xl sm:text-6xl"} bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text font-black tracking-tight text-transparent`}>Know the play</h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">Five quick cards to get everyone ready before the first question.</p>
-            <article className={`${isDuel ? "mt-4 p-5 sm:p-6" : "mt-7 p-7 sm:p-9 lg:mt-5 lg:p-6"} w-full max-w-xl rounded-2xl border border-slate-700/60 bg-slate-900/80 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/80`}>
-              <div className={`grid ${isDuel ? "h-12 w-12 text-2xl" : "h-14 w-14 text-3xl"} place-items-center rounded-2xl bg-gradient-to-br ${accent} font-black text-white shadow-lg`}>{icon}</div>
-              <p className={`${isDuel ? "mt-4" : "mt-7"} text-xs font-bold uppercase tracking-[0.28em] text-cyan-300`}>{eyebrow}</p>
-              <h2 className={`${isDuel ? "mt-2 text-2xl sm:text-3xl" : "mt-3 text-3xl sm:text-4xl"} font-black text-white`}>{title}</h2>
-              <p className={`${isDuel ? "mt-3 text-sm leading-6" : "mt-4 text-base leading-7"} text-slate-300`}>{body}</p>
+            <article className={`${isCompactRules ? "mt-4 p-5 sm:p-6" : "mt-7 p-7 sm:p-9 lg:mt-5 lg:p-6"} w-full max-w-xl rounded-2xl border border-slate-700/60 bg-slate-900/80 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/80`}>
+              <div className={`grid ${isCompactRules ? "h-12 w-12 text-2xl" : "h-14 w-14 text-3xl"} place-items-center rounded-2xl bg-gradient-to-br ${accent} font-black text-white shadow-lg`}>{icon}</div>
+              <p className={`${isCompactRules ? "mt-4" : "mt-7"} text-xs font-bold uppercase tracking-[0.28em] text-cyan-300`}>{eyebrow}</p>
+              <h2 className={`${isCompactRules ? "mt-2 text-2xl sm:text-3xl" : "mt-3 text-3xl sm:text-4xl"} font-black text-white`}>{title}</h2>
+              <p className={`${isCompactRules ? "mt-3 text-sm leading-6" : "mt-4 text-base leading-7"} text-slate-300`}>{body}</p>
             </article>
-            <div className={`${isDuel ? "mt-4" : "mt-6 lg:mt-4"} flex items-center gap-2`} aria-label={`Rule ${ruleIndex + 1} of ${RULES.length}`}>
-              {RULES.map((rule, index) => <span className={`h-2 rounded-full transition-all ${index === ruleIndex ? "w-8 bg-cyan-400" : "w-2 bg-slate-700"}`} key={rule[2]} />)}
+            <div className={`${isCompactRules ? "mt-4" : "mt-6 lg:mt-4"} flex items-center gap-2`} aria-label={`Rule ${ruleIndex + 1} of ${activeRules.length}`}>
+              {activeRules.map((rule, index) => <span className={`h-2 rounded-full transition-all ${index === ruleIndex ? "w-8 bg-cyan-400" : "w-2 bg-slate-700"}`} key={rule[2]} />)}
             </div>
-            <div className={`${isDuel ? "mt-4" : "mt-6 lg:mt-4"} flex w-full max-w-xl items-center justify-between gap-4`}>
+            <div className={`${isCompactRules ? "mt-4" : "mt-6 lg:mt-4"} flex w-full max-w-xl items-center justify-between gap-4`}>
               <button className="text-sm font-bold text-slate-400 hover:text-white" onClick={() => setShowRules(false)} type="button">Skip rules</button>
-              <button className={`arcade-launch-button rounded-xl text-sm font-extrabold ${isDuel ? "px-5 py-2.5" : "px-7 py-3"}`} onClick={() => isLastRule ? setShowRules(false) : setRuleIndex((index) => index + 1)} type="button">
-                {isLastRule ? `Set up ${isDuel ? "duel" : "battle"} →` : "Next rule →"}
+              <button className={`arcade-launch-button rounded-xl text-sm font-extrabold ${isCompactRules ? "px-5 py-2.5" : "px-7 py-3"}`} onClick={() => isLastRule ? setShowRules(false) : setRuleIndex((index) => index + 1)} type="button">
+                {isLastRule ? `Set up ${isSolo ? "solo" : isDuel ? "duel" : "battle"} →` : "Next rule →"}
               </button>
             </div>
           </section>
