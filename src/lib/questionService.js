@@ -64,7 +64,14 @@ const MOCK_QUESTIONS = [
 ];
 
 function shuffle(items) {
-  return [...items].sort(() => Math.random() - 0.5);
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+
+  return shuffled;
 }
 
 function fallbackQuestionsForCategory(categoryName) {
@@ -197,21 +204,7 @@ export async function fetchQuestionsForGame(count, options = {}) {
     ).values()];
     const filteredRows = uniqueRows.filter(matchesFilters);
     const availableRows = filteredRows.length ? filteredRows : uniqueRows;
-
-    const challengingRows = availableRows.filter((row) =>
-      ["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)),
-    );
-    let selectedRows = shuffle(availableRows).slice(0, count);
-
-    if (
-      challengingRows.length > 0 &&
-      !selectedRows.some((row) => ["Hard", "Difficult"].includes(getDifficultyLabel(row.difficulty)))
-    ) {
-      selectedRows = [
-        shuffle(challengingRows)[0],
-        ...selectedRows.slice(1),
-      ];
-    }
+    const selectedRows = shuffle(availableRows).slice(0, count);
 
     const formattedQuestions = shuffle(selectedRows)
       .map(formatQuestionForGame)
