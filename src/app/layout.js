@@ -2,6 +2,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import AdContainer from "../components/AdContainer";
+import {
+  DEFAULT_SEO_DESCRIPTION,
+  DEFAULT_SEO_TITLE,
+  SITE_URL,
+  createPageMetadata,
+} from "../lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,12 +21,44 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Five Hearts Quiz",
-  description: "Choose a shared-screen game to play.",
+  ...createPageMetadata({
+    path: "/",
+    title: DEFAULT_SEO_TITLE,
+    description: DEFAULT_SEO_DESCRIPTION,
+  }),
+  metadataBase: new URL(SITE_URL),
+  keywords: [
+    "free trivia game",
+    "group party game",
+    "shared screen quiz",
+    "multiplayer trivia",
+    "browser board game",
+    "family trivia battle",
+  ],
 };
 
 export const viewport = {
   viewportFit: "cover",
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "@id": `${SITE_URL}/#application`,
+  name: "Five Hearts Trivia",
+  url: SITE_URL,
+  image: `${SITE_URL}/og-image.png`,
+  description: DEFAULT_SEO_DESCRIPTION,
+  genre: ["Party Game", "Trivia", "Multiplayer"],
+  operatingSystem: "Any (Web Browser)",
+  applicationCategory: "GameApplication",
+  applicationSubCategory: "BrowserGame",
+  isAccessibleForFree: true,
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -30,6 +68,12 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex h-[100dvh] flex-col overflow-hidden bg-background text-foreground">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          }}
+        />
         <Script
           async
           crossOrigin="anonymous"

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BattleSetup from "../../../components/BattleSetup";
+import { createPageMetadata } from "../../../lib/seo";
 
 const MODE_DETAILS = {
   solo: {
@@ -18,6 +19,36 @@ const MODE_DETAILS = {
 // new text
 export function generateStaticParams() {
   return Object.keys(MODE_DETAILS).map((mode) => ({ mode }));
+}
+
+export async function generateMetadata({ params }) {
+  const { mode } = await params;
+  const details = MODE_DETAILS[mode];
+
+  if (!details) {
+    return {
+      title: "Game mode unavailable | Five Hearts",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const descriptions = {
+    solo: "Play a free solo browser trivia challenge. Answer questions, protect five hearts, and keep your score climbing.",
+    duel: "Challenge a friend to free multiplayer trivia on one shared screen. Take turns answering and protect your five hearts.",
+    battle:
+      "Bring your group together for a free shared-screen party trivia battle. Compete for points while protecting five hearts.",
+  };
+  const titles = {
+    solo: "Free Solo Trivia Challenge | Five Hearts",
+    duel: "Free Multiplayer Trivia Duel | Five Hearts",
+    battle: "Free Party Trivia Battle for Groups | Five Hearts",
+  };
+
+  return createPageMetadata({
+    path: `/game/${mode}`,
+    title: titles[mode],
+    description: descriptions[mode],
+  });
 }
 // The ModePage component is an asynchronous function that takes in a params object, which contains the mode parameter. It retrieves the mode from the params and looks up the corresponding details in the MODE_DETAILS object. If the mode is "battle", it renders the BattleSetup component. Otherwise, it renders a main section with information about the selected game mode, including its name and description. If the mode is not found in MODE_DETAILS, it defaults to a generic message indicating that the game mode is not available yet.
 export default async function ModePage({ params = {} }) {
