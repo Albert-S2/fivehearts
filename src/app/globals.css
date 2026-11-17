@@ -296,7 +296,25 @@ input:focus-visible {
 .arcade-shell,
 .arcade-game,
 .manga-shell {
-  padding-bottom: max(6rem, calc(var(--anchor-ad-height) + var(--anchor-ad-gap)));
+  padding-bottom: max(
+    7rem,
+    calc(var(--anchor-ad-height) + var(--anchor-ad-gap) + env(safe-area-inset-bottom, 0px))
+  );
+}
+
+.ad-anchor {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (min-width: 640px) {
+  .arcade-shell,
+  .arcade-game,
+  .manga-shell {
+    padding-bottom: max(
+      6rem,
+      calc(var(--anchor-ad-height) + var(--anchor-ad-gap) + env(safe-area-inset-bottom, 0px))
+    );
+  }
 }
 
 .arcade-game .arcade-panel {
@@ -365,7 +383,9 @@ input:focus-visible {
 
 .arcade-summary {
   overflow-y: auto;
-  padding-bottom: calc(var(--anchor-ad-height) + var(--anchor-ad-gap));
+  padding-bottom: calc(
+    var(--anchor-ad-height) + var(--anchor-ad-gap) + env(safe-area-inset-bottom, 0px)
+  );
 }
 
 .arcade-launch-button:hover {
@@ -576,7 +596,7 @@ section[aria-labelledby="round-summary-title"] h2 {
 
 .arcade-game::after {
   right: -8rem;
-  bottom: -10rem;
+  bottom: 0;
   background: #d946ef;
 }
 
@@ -646,7 +666,7 @@ section[aria-labelledby="round-summary-title"] h2 {
 }
 
 .arcade-orb-violet {
-  bottom: -12rem;
+  bottom: 0;
   left: 2%;
   background: #7c3aed;
 }
