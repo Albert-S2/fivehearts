@@ -28,7 +28,8 @@ export default function AdContainer({
   const adRef = useRef(null);
   const isDevelopment = process.env.NODE_ENV === "development";
   const hasPublisherId = Boolean(process.env.NEXT_PUBLIC_ADSENSE_PUB_ID);
-  const showPreview = isDevelopment || !hasPublisherId;
+  const hasValidSlotId = /^\d+$/.test(slotId ?? "");
+  const showPreview = isDevelopment || !hasPublisherId || !hasValidSlotId;
   const dimensions = getDimensions(format, style);
 
   useEffect(() => {
@@ -50,26 +51,21 @@ export default function AdContainer({
     >
       {showPreview ? (
         <div className="flex h-full w-full flex-col items-center justify-center bg-transparent px-3 text-center text-xs font-black uppercase tracking-[0.16em] text-ink-blue">
-          <span>Ad preview</span>
+          <span>{hasValidSlotId ? "Ad preview" : "Ad slot not configured"}</span>
           <span className="mt-2 max-w-full truncate text-[10px] font-bold tracking-normal text-slate-500">
             {slotId}
           </span>
         </div>
       ) : (
-        <>
-          <span className="pointer-events-none absolute inset-0 z-20 grid place-items-center bg-white/80 text-[10px] font-black uppercase tracking-[0.18em] text-ink-blue">
-            Advertisement
-          </span>
-          <ins
-            className="adsbygoogle relative z-10 block h-full w-full"
-            data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}
-            data-ad-slot={slotId}
-            data-ad-format={format === "auto" ? "auto" : undefined}
-            data-full-width-responsive="true"
-            ref={adRef}
-            style={{ display: "block", height: "100%", width: "100%" }}
-          />
-        </>
+        <ins
+          className="adsbygoogle block h-full w-full"
+          data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}
+          data-ad-slot={slotId}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+          ref={adRef}
+          style={{ display: "block", height: "100%", width: "100%" }}
+        />
       )}
     </div>
   );
