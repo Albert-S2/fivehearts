@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import AdContainer from "../components/AdContainer";
 import "./globals.css";
 
@@ -65,6 +66,7 @@ export default function RootLayout({ children }) {
             />
           </div>
         </div>
+        <Analytics />
       </body>
     </html>
   );
