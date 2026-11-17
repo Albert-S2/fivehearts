@@ -122,10 +122,10 @@ function SoloSetup({ playerName, setPlayerName, timeLimit, setTimeLimit, isCreat
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">Answer for 10 points. A wrong answer costs one heart. Keep going until all five are gone.</p>
 
           <div className="mt-7 w-full max-w-lg rounded-2xl border border-slate-700/60 bg-slate-900/90 p-5 text-left shadow-2xl sm:p-7">
-            <label className="block text-xs font-bold uppercase tracking-[0.16em] text-slate-300">
+            <label className="block text-xs font-bold uppercase tracking-[0.16em] text-slate-300" htmlFor="solo-player-name">
               Player name
-              <input className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-base font-bold text-white outline-none placeholder:text-slate-500 focus:border-cyan-400" maxLength={20} onChange={(event) => setPlayerName(event.target.value)} placeholder="Player" type="text" value={playerName} />
             </label>
+            <input id="solo-player-name" className="mt-4 block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-base font-bold leading-6 normal-case tracking-normal text-white outline-none placeholder:text-slate-500 focus:border-cyan-400" maxLength={20} onChange={(event) => setPlayerName(event.target.value)} placeholder="Player" type="text" value={playerName} />
             <div className="mt-5 flex items-center justify-between rounded-xl border border-slate-700/70 bg-slate-950/50 px-4 py-3">
               <span className="text-sm font-bold text-slate-300">Starting hearts</span>
               <Hearts count={5} />
