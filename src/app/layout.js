@@ -84,13 +84,21 @@ export default function RootLayout({ children }) {
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[190px_minmax(0,1fr)_190px]">
           <aside className="z-20 hidden px-2 pt-8 lg:block">
             <div className="ad-frame sticky top-8 mx-auto h-[300px] w-[180px]">
-              <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-left-sidebar" />
+              <AdContainer
+                className="h-[300px] w-[180px]"
+                format="sidebar"
+                slotId="8746971591"
+              />
             </div>
           </aside>
           <div className="h-full min-h-0 min-w-0 overflow-hidden">{children}</div>
           <aside className="z-20 hidden px-2 pt-8 lg:block">
             <div className="ad-frame sticky top-8 mx-auto h-[300px] w-[180px]">
-              <AdContainer className="h-[300px] w-[180px]" format="sidebar" slotId="five-hearts-right-sidebar" />
+              <AdContainer
+                className="h-[300px] w-[180px]"
+                format="sidebar"
+                slotId="6176648570"
+              />
             </div>
           </aside>
         </div>
