@@ -82,41 +82,39 @@ export default function RootLayout({ children }) {
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || ""}`}
         />
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[190px_minmax(0,1fr)_190px]">
-          <aside className="z-20 hidden px-2 pt-8 lg:block">
-            <div className="ad-frame sticky top-8 mx-auto h-[300px] w-[180px]">
+          <aside className="z-20 hidden flex-col justify-between px-2 py-8 lg:flex">
+            <div className="ad-frame mx-auto h-[300px] w-[180px]">
               <AdContainer
                 className="h-[300px] w-[180px]"
                 format="sidebar"
                 slotId="8746971591"
               />
             </div>
+            <div className="ad-frame mx-auto h-[300px] w-[180px]">
+              <AdContainer
+                className="h-[300px] w-[180px]"
+                format="sidebar"
+                slotId="5081837565"
+              />
+            </div>
           </aside>
           <div className="h-full min-h-0 min-w-0 overflow-hidden">{children}</div>
-          <aside className="z-20 hidden px-2 pt-8 lg:block">
-            <div className="ad-frame sticky top-8 mx-auto h-[300px] w-[180px]">
+          <aside className="z-20 hidden flex-col justify-between px-2 py-8 lg:flex">
+            <div className="ad-frame mx-auto h-[300px] w-[180px]">
               <AdContainer
                 className="h-[300px] w-[180px]"
                 format="sidebar"
                 slotId="6176648570"
               />
             </div>
+            <div className="ad-frame mx-auto h-[300px] w-[180px]">
+              <AdContainer
+                className="h-[300px] w-[180px]"
+                format="sidebar"
+                slotId="3247232908"
+              />
+            </div>
           </aside>
-        </div>
-        <div className="ad-anchor ad-frame fixed inset-x-0 z-50 flex h-[50px] items-center justify-center border-x-0 border-b-0 bg-white/95 px-2 shadow-[0_-4px_16px_rgb(45_55_72_/_0.1)] backdrop-blur lg:h-[90px]">
-          <div className="block h-[50px] w-[320px] lg:hidden">
-            <AdContainer
-              className="h-[50px] w-[320px]"
-              format="mobile"
-              slotId="five-hearts-mobile-anchor"
-            />
-          </div>
-          <div className="hidden h-[90px] w-[728px] lg:block">
-            <AdContainer
-              className="h-[90px] w-[728px]"
-              format="anchor"
-              slotId="five-hearts-desktop-anchor"
-            />
-          </div>
         </div>
         <Analytics />
       </body>

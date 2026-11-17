@@ -302,10 +302,6 @@ input:focus-visible {
   );
 }
 
-.ad-anchor {
-  bottom: env(safe-area-inset-bottom, 0px);
-}
-
 @media (min-width: 640px) {
   .arcade-shell,
   .arcade-game,
