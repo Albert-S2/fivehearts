@@ -78,7 +78,7 @@ export default function RootLayout({ children }) {
           async
           crossOrigin="anonymous"
           data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || ""}`}
         />
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[190px_minmax(0,1fr)_190px]">
