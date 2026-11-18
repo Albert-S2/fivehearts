@@ -95,6 +95,8 @@ export async function fetchTopScores(limit = 50) {
     .from("leaderboard")
     .select("*")
     .order("score", { ascending: false })
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
     .limit(safeLimit);
 
   if (error) throw error;

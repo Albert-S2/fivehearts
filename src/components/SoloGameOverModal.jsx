@@ -8,6 +8,7 @@ import {
   sanitizePlayerName,
   submitScore,
 } from "../utils/leaderboard";
+import { SITE_URL } from "../lib/seo";
 
 const RANK_STYLES = [
   "border-amber-300/70 bg-amber-400/15",
@@ -44,6 +45,8 @@ export default function SoloGameOverModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
   const [savedRecord, setSavedRecord] = useState(null);
+  const [shareStatus, setShareStatus] = useState("");
+  const [shareError, setShareError] = useState("");
   const requestId = useRef(0);
 
   const loadLeaderboard = useCallback(async () => {
@@ -92,8 +95,42 @@ export default function SoloGameOverModal({
     ? Number(leaderboard[49].score)
     : null;
   const qualifiesForLeaderboard = leaderboard.length < 50
-    || Number(score) >= lowestQualifyingScore;
+    || Number(score) > lowestQualifyingScore;
   const nameError = getNameError(name);
+
+  async function handleShareScore() {
+    const shareUrl = `${SITE_URL}/game`;
+    const shareText = `I scored ${Number(score).toLocaleString()} points in Five Hearts Quiz. Can you beat me?`;
+    setShareStatus("");
+    setShareError("");
+
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: "My Five Hearts score",
+          text: shareText,
+          url: shareUrl,
+        });
+        setShareStatus("Shared!");
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") return;
+        console.error("Native sharing failed; trying to copy the result instead.", error);
+      }
+    }
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard access is unavailable in this browser.");
+      }
+
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      setShareStatus("Copied!");
+    } catch (error) {
+      console.error("Unable to share or copy the solo score.", error);
+      setShareError("Sharing and copying aren’t available here.");
+    }
+  }
 
   async function handleSubmitScore(event) {
     event.preventDefault();
@@ -167,9 +204,6 @@ export default function SoloGameOverModal({
                 <p className="truncate font-black text-white">
                   {record.player_name || "Player"}
                 </p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  {record.game_mode || "Solo"}
-                </p>
               </div>
               <p className="shrink-0 text-lg font-black tabular-nums text-cyan-200">
                 {Number(record.score || 0).toLocaleString()}
@@ -182,7 +216,7 @@ export default function SoloGameOverModal({
   }
 
   return (
-    <main className="arcade-shell arcade-end-screen arcade-game relative flex h-full min-h-0 flex-col overflow-hidden bg-[#090A0F] px-4 pb-28 pt-4 text-white sm:px-8 sm:pb-24 sm:pt-6">
+    <main className="arcade-shell arcade-end-screen arcade-game relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#090A0F] px-4 pb-0 pt-4 text-white sm:px-8 sm:pt-6">
       <div aria-hidden="true" className="arcade-orb arcade-orb-cyan" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" />
       <div aria-hidden="true" className="arcade-orb arcade-orb-violet" />
@@ -200,7 +234,7 @@ export default function SoloGameOverModal({
         </header>
 
         {view === "leaderboard" ? (
-          <section className="flex min-h-0 flex-1 flex-col py-4 sm:py-7">
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden py-4 sm:py-7">
             <div className="shrink-0 text-center">
               <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">
                 Global rankings
@@ -219,7 +253,7 @@ export default function SoloGameOverModal({
                 {submissionError}
               </p>
             )}
-            <div className="mt-4 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-700/60 bg-slate-900/80 p-3 shadow-2xl backdrop-blur-xl sm:mt-6 sm:p-4">
+            <div className="solo-leaderboard-scroll mt-4 min-h-0 max-h-[30dvh] flex-1 overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-700/60 bg-slate-900/80 p-3 shadow-2xl backdrop-blur-xl sm:mt-6 sm:p-4">
               {renderLeaderboard()}
             </div>
           </section>
@@ -249,12 +283,37 @@ export default function SoloGameOverModal({
                 <p className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-300">
                   Final score
                 </p>
-                <p className="mt-1 text-4xl font-black tabular-nums text-white sm:mt-2 sm:text-6xl">
-                  {score}
-                </p>
+                <div className="mx-auto mt-1 grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center sm:mt-2">
+                  <span aria-hidden="true" />
+                  <p className="text-4xl font-black tabular-nums text-white sm:text-6xl">
+                    {score}
+                  </p>
+                  {view === "results" && (
+                    <button
+                      aria-label={shareStatus ? `Score ${shareStatus.toLowerCase()}` : "Share your score"}
+                      className="justify-self-end inline-flex min-h-10 items-center gap-1 rounded-full border border-fuchsia-200 bg-gradient-to-r from-fuchsia-500 via-violet-500 to-cyan-500 px-2.5 text-[10px] font-black uppercase tracking-wide text-white shadow-[0_0_20px_rgba(217,70,239,0.35)] transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 sm:gap-1.5 sm:px-3 sm:text-xs"
+                      onClick={handleShareScore}
+                      type="button"
+                    >
+                      <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
+                        <path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                      </svg>
+                      {shareStatus || "Share"}
+                    </button>
+                  )}
+                  {view !== "results" && <span aria-hidden="true" />}
+                </div>
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   points
                 </p>
+                {shareError && (
+                  <p className="mt-2 text-center text-[10px] leading-4 text-rose-300 sm:text-xs" role="alert">
+                    {shareError}{" "}
+                    <a className="underline underline-offset-2" href={`${SITE_URL}/game`}>
+                      Open the game link
+                    </a>
+                  </p>
+                )}
               </div>
 
               {view !== "name" && (
@@ -276,6 +335,10 @@ export default function SoloGameOverModal({
                         Try again
                       </button>
                     </div>
+                  ) : Number(score) <= 0 ? (
+                    <p className="text-center text-xs font-semibold leading-5 text-slate-300 sm:text-sm sm:leading-6">
+                      You need more than 0 points to add a score to the leaderboard. Keep playing and try again!
+                    </p>
                   ) : qualifiesForLeaderboard ? (
                     declinedLeaderboard ? (
                       <p className="text-center text-xs font-semibold text-slate-300 sm:text-sm">
