@@ -35,6 +35,11 @@ export const metadata = {
     "browser board game",
     "family trivia battle",
   ],
+  other: process.env.NEXT_PUBLIC_ADSENSE_PUB_ID
+    ? {
+        "google-adsense-account": process.env.NEXT_PUBLIC_ADSENSE_PUB_ID,
+      }
+    : undefined,
 };
 
 export const viewport = {
