@@ -377,6 +377,17 @@ input:focus-visible {
   box-shadow: 0 12px 30px rgb(217 70 239 / 0.25), inset 0 -3px 0 rgb(2 6 23 / 0.25);
 }
 
+.arcade-end-screen .arcade-launch-button {
+  min-height: 3rem;
+  margin: 0;
+}
+
+@media (max-height: 600px) {
+  .solo-ending-description {
+    display: none;
+  }
+}
+
 .arcade-summary {
   overflow-y: auto;
   padding-bottom: calc(

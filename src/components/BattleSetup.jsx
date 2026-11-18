@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
 import HybridScienceCard, { TEAM_COLOR_CONFIG } from "./HybridScienceCard";
+import SoloGameOverModal from "./SoloGameOverModal";
 import { fetchQuestionsForGame } from "../lib/questionService";
 
 const TEAM_COLORS = ["red", "blue", "green", "yellow", "purple"];
@@ -159,6 +160,8 @@ export default function BattleSetup({ mode = "battle" }) {
   const [showRules, setShowRules] = useState(true);
   const [ruleIndex, setRuleIndex] = useState(0);
   const [setupStep, setSetupStep] = useState("settings");
+  const [restartError, setRestartError] = useState("");
+  const gameRunIdRef = useRef(0);
 
   function resetBattleState() {
     setTeamCount(isSolo ? 1 : isDuel ? 2 : 3);
@@ -171,11 +174,17 @@ export default function BattleSetup({ mode = "battle" }) {
     setShowRules(true);
     setRuleIndex(0);
     setSetupStep("settings");
+    setRestartError("");
   }
 
   function exitToMainMenu() {
     resetBattleState();
     router.replace("/");
+  }
+
+  function exitToModeSelection() {
+    resetBattleState();
+    router.replace("/game");
   }
 
   function updateTeamCount(count) {
@@ -185,19 +194,11 @@ export default function BattleSetup({ mode = "battle" }) {
     setTeamNames((names) => Array.from({ length: count }, (_, index) => names[index] || `Team ${index + 1}`));
   }
 
-  async function createBattle() {
-    setIsCreatingBattle(true);
-    const questionsToLoad = isSolo ? MAX_QUESTIONS : questionCount;
-    const questions = padQuestions(await fetchQuestionsForGame(questionsToLoad), questionsToLoad);
-    if (!questions.length) {
-      console.error("No usable questions are available to start the battle.");
-      setIsCreatingBattle(false);
-      return;
-    }
-
-    setGame({
+  function createGameState(questions, phase = "dashboard") {
+    return {
+      runId: ++gameRunIdRef.current,
       mode,
-      phase: "dashboard",
+      phase,
       teams: teamColors.slice(0, teamCount).map((color, index) => ({
         id: `team-${index + 1}`,
         name: teamNames[index].trim() || (isSolo ? "Player" : `Team ${index + 1}`),
@@ -216,12 +217,58 @@ export default function BattleSetup({ mode = "battle" }) {
       questionNumber: 1,
       answeringTeamId: isSolo ? "team-1" : null,
       lastTransition: "Roll the dice to set the first round order.",
-    });
+    };
+  }
+
+  async function createBattle() {
+    setIsCreatingBattle(true);
+    const questionsToLoad = isSolo ? MAX_QUESTIONS : questionCount;
+    const questions = padQuestions(await fetchQuestionsForGame(questionsToLoad), questionsToLoad);
+    if (!questions.length) {
+      console.error("No usable questions are available to start the battle.");
+      setIsCreatingBattle(false);
+      return;
+    }
+
+    setGame(createGameState(questions));
     setIsCreatingBattle(false);
   }
 
+  async function restartSoloGame() {
+    setRestartError("");
+    setIsCreatingBattle(true);
+
+    try {
+      const questions = padQuestions(
+        await fetchQuestionsForGame(MAX_QUESTIONS),
+        MAX_QUESTIONS,
+      );
+      if (!questions.length) {
+        throw new Error("No usable questions are available to restart the game.");
+      }
+
+      setGame(createGameState(questions, "question"));
+    } catch (error) {
+      console.error("Unable to restart the solo game.", error);
+      setRestartError("Unable to restart right now. Please try again.");
+    } finally {
+      setIsCreatingBattle(false);
+    }
+  }
+
   if (game) {
-    return <BattleGame game={game} onMainMenu={exitToMainMenu} onUpdate={setGame} />;
+    return (
+      <BattleGame
+        game={game}
+        isRestarting={isCreatingBattle}
+        key={game.runId}
+        onMainMenu={exitToMainMenu}
+        onModeSelection={exitToModeSelection}
+        onRestartSolo={restartSoloGame}
+        onUpdate={setGame}
+        restartError={restartError}
+      />
+    );
   }
 
   if (showRules) {
@@ -367,12 +414,15 @@ function VictoryScreen({ teams, onMainMenu, mode = "battle" }) {
   return <main className="arcade-shell arcade-game relative flex h-[100dvh] flex-col overflow-x-hidden overflow-y-auto bg-[#090A0F] px-4 pb-28 pt-4 text-white sm:px-6 sm:pb-24 sm:pt-6"><div aria-hidden="true" className="arcade-orb arcade-orb-cyan" /><div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" /><div className="relative z-10 flex min-h-max flex-1 flex-col"><ExitGameButton className="self-start text-sm font-bold text-slate-400 hover:text-white" onConfirm={onMainMenu} /><section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">{gameName} complete</p><h1 className="mt-4 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-5xl font-black tracking-tight text-transparent sm:text-6xl">Victory!</h1><p className="mt-4 text-slate-300">{survivors.length === 1 ? `${winner.name} is the last team standing.` : "All scheduled rounds are complete."}</p><div className="team-textured-card mt-6 w-full rounded-3xl border border-cyan-400/30 bg-slate-900/80 p-4 shadow-2xl shadow-fuchsia-950/30 backdrop-blur-xl sm:mt-8 sm:p-6"><div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl border-2 text-3xl font-black shadow-lg sm:h-20 sm:w-20 sm:text-4xl" style={{ background: `linear-gradient(145deg, ${winnerConfig.panel}, ${winnerConfig.value}dd)`, borderColor: winnerConfig.value }}>{winnerConfig.symbol}</div><p className="mt-4 text-xs font-black uppercase tracking-[0.3em] text-cyan-300 sm:mt-5">Winning team</p><h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">{winner.name}</h2><p className="mt-4 text-4xl font-black text-cyan-300 sm:text-5xl">{winner.points}<span className="ml-2 text-base uppercase tracking-wider text-slate-400">points</span></p><div className="mt-4 flex justify-center"><Hearts count={winner.hearts} /></div></div><ExitGameButton className="arcade-launch-button mt-6 block rounded-xl px-8 py-4 font-black sm:mt-8" label="Go to main menu" onConfirm={onMainMenu} /></section></div></main>;
 }
 
-function SoloVictoryScreen({ player, onMainMenu }) {
-  const config = TEAM_COLOR_CONFIG.red;
-  return <main className="arcade-shell arcade-game relative flex h-[100dvh] flex-col overflow-x-hidden overflow-y-auto bg-[#090A0F] px-4 pb-28 pt-4 text-white sm:px-6 sm:pb-24 sm:pt-6"><div aria-hidden="true" className="arcade-orb arcade-orb-cyan" /><div aria-hidden="true" className="arcade-orb arcade-orb-fuchsia" /><section className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center text-center"><p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Solo run complete</p><h1 className="mt-4 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-6xl">Game over</h1><p className="mt-4 text-slate-300">All five hearts are gone. You answered {player.questionsAsked} questions.</p><div className="team-textured-card mt-6 w-full rounded-3xl border border-cyan-400/30 bg-slate-900/80 p-4 shadow-2xl shadow-fuchsia-950/30 backdrop-blur-xl sm:mt-8 sm:p-6"><div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl border-2 text-3xl font-black shadow-lg sm:h-20 sm:w-20 sm:text-4xl" style={{ background: `linear-gradient(145deg, ${config.panel}, ${config.value}dd)`, borderColor: config.value }}>{config.symbol}</div><p className="mt-4 text-xs font-black uppercase tracking-[0.3em] text-cyan-300 sm:mt-5">Final score</p><h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">{player.name}</h2><p className="mt-4 text-4xl font-black text-cyan-300 sm:text-5xl">{player.points}<span className="ml-2 text-base uppercase tracking-wider text-slate-400">points</span></p><div className="mt-4 flex justify-center"><Hearts count={player.hearts} /></div></div><ExitGameButton className="arcade-launch-button mt-6 block rounded-xl px-8 py-4 font-black sm:mt-8" label="Go to main menu" onConfirm={onMainMenu} /></section></main>;
-}
-
-function BattleGame({ game, onMainMenu, onUpdate }) {
+function BattleGame({
+  game,
+  onMainMenu,
+  onModeSelection,
+  onRestartSolo,
+  onUpdate,
+  isRestarting,
+  restartError,
+}) {
   const [isRolling, setIsRolling] = useState(false);
   const [diceFace, setDiceFace] = useState("?");
   const [rollingTeamId, setRollingTeamId] = useState(null);
@@ -482,7 +532,24 @@ function BattleGame({ game, onMainMenu, onUpdate }) {
     onUpdate({ ...game, teams: updatedTeams, questionNumber: game.questionNumber + 1, roundTurnIndex: nextIndex, answeringTeamId: nextTeam.id, lastTransition: `${nextTeam.name} is next in the locked order.` });
   }
 
-  if (game.phase === "victory") return game.mode === "solo" ? <SoloVictoryScreen onMainMenu={onMainMenu} player={game.teams[0]} /> : <VictoryScreen mode={game.mode} onMainMenu={onMainMenu} teams={game.teams} />;
+  if (game.phase === "victory") {
+    if (game.mode === "solo") {
+      const player = game.teams[0];
+      return (
+        <SoloGameOverModal
+          isRestarting={isRestarting}
+          onMainMenu={onModeSelection}
+          onPlayAgain={onRestartSolo}
+          playerName={player.name}
+          questionsAsked={player.questionsAsked}
+          restartError={restartError}
+          score={player.points}
+        />
+      );
+    }
+
+    return <VictoryScreen mode={game.mode} onMainMenu={onMainMenu} teams={game.teams} />;
+  }
   if (game.phase === "summary") return <><TeamStrip {...game} highlightedTeamId={null} onMainMenu={onMainMenu} /><StandingsModal game={game} onNextRound={() => {
     if (game.roundNumber >= game.rounds) {
       onUpdate({ ...game, phase: "victory" });
