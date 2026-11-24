@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createPageMetadata } from "../../lib/seo";
 
 export const metadata = {
@@ -59,6 +60,16 @@ export default function NewGamePage() {
               Your new game’s first components can take shape here without
               changing the existing games or game menu.
             </p>
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              className="arcade-launch-button rounded-xl px-8 py-4 text-sm font-black"
+              href="/new-game/play"
+            >
+              Start game
+              <span aria-hidden="true" className="ml-2">→</span>
+            </Link>
           </div>
         </section>
 
