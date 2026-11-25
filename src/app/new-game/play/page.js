@@ -1,11 +1,13 @@
 import Link from "next/link";
+import NewGameBoard from "../../../components/NewGameBoard";
 import { createPageMetadata } from "../../../lib/seo";
 
 export const metadata = {
   ...createPageMetadata({
     path: "/new-game/play",
-    title: "New Game Playtest | Five Hearts",
-    description: "A standalone placeholder for building and testing the new game.",
+    title: "The Hexagon Color Match Game | Five Hearts",
+    description:
+      "Memorize a wave of metallic colors, then match the neighboring hexagon triangles to score points.",
   }),
   robots: {
     index: false,
@@ -35,34 +37,21 @@ export default function NewGamePlayPage() {
         <section className="flex flex-1 flex-col justify-center py-12">
           <div className="mb-8 text-center">
             <p className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">
-              New game
+              Metallic reveal
             </p>
             <h1 className="mt-3 bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-500 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-6xl">
-              Build the gameplay here
+              The Hexagon
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
-              This separate page is ready for the new game’s playable
-              prototype. The game itself has not been built yet.
+              Memorize the center-color wave, then select matching colors from
+              the six neighboring triangles. Correct matches earn 10 points;
+              correct hexagons turn green, and mistakes cost a heart and turn
+              the hexagon red.
             </p>
           </div>
 
-          <div
-            aria-label="New game playtest area"
-            className="flex min-h-80 flex-1 flex-col items-center justify-center rounded-3xl border border-dashed border-slate-700 bg-slate-900/50 px-6 py-12 text-center"
-          >
-            <span
-              aria-hidden="true"
-              className="grid h-16 w-16 place-items-center rounded-2xl border border-fuchsia-300/20 bg-fuchsia-300/10 text-3xl text-fuchsia-200"
-            >
-              ▶
-            </span>
-            <h2 className="mt-5 text-xl font-bold text-white">
-              Gameplay goes here
-            </h2>
-            <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">
-              Replace this area with the new game when you’re ready to start
-              implementing it.
-            </p>
+          <div className="flex min-h-80 flex-1 items-center justify-center rounded-3xl border border-slate-700/70 bg-slate-900/50 px-4 py-8">
+            <NewGameBoard />
           </div>
         </section>
 
