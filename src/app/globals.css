@@ -714,13 +714,32 @@ section[aria-labelledby="round-summary-title"] h2 {
   transition: opacity 260ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.hex-board,
+.hex-board :focus,
+.hex-board :focus-visible,
+.hex-board .hex-triangle,
+.hex-board .hex-triangle:focus,
+.hex-board .hex-triangle:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.hex-board :focus,
+.hex-board :focus-visible {
+  filter: none;
+}
+
 .hex-neighbor-target {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: filter 160ms ease-out;
 }
 
-.hex-neighbor-target:hover {
+.hex-neighbor-target[aria-disabled="true"] {
+  cursor: default;
+}
+
+.hex-neighbor-target:not([aria-disabled="true"]):hover {
   filter: brightness(1.12);
 }
 

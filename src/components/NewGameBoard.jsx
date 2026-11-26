@@ -305,7 +305,9 @@ export default function NewGameBoard() {
 
       <svg
         aria-labelledby="hex-board-title hex-board-description"
-        className="h-auto w-full max-w-[28rem] md:max-w-[34rem] lg:max-w-[44rem]"
+        className="hex-board h-auto w-full max-w-[28rem] md:max-w-[34rem] lg:max-w-[44rem]"
+        focusable="false"
+        onMouseDown={(event) => event.preventDefault()}
         role="group"
         viewBox="0 0 440 380"
         xmlns="http://www.w3.org/2000/svg"
@@ -445,8 +447,9 @@ export default function NewGameBoard() {
                       isNeighborTarget ? Boolean(neighbor?.selected) : undefined
                     }
                     className={[
+                      "hex-triangle",
                       isActive ? "hex-facet-flipping" : "",
-                      canSelect ? "hex-neighbor-target" : "",
+                      isNeighborTarget ? "hex-neighbor-target" : "",
                       isSelectedNeighbor ? "hex-facet-pushed" : "",
                     ]
                       .filter(Boolean)
