@@ -15,14 +15,26 @@ const HEX_CENTERS = [
 const TRIANGLE_COUNT = 6;
 const TURN_HALF_DURATION = 300;
 const MISTAKE_ALERT_DURATION = 1500;
-const CENTER_METALS = ["cyan", "gold", "magenta", "blue", "green", "violet"];
+const INITIAL_LEVELS = 5;
+const LEVELS_PER_COLOR_SET = TRIANGLE_COUNT - 2;
+const LAST_COLOR_COUNT = 6;
+const CENTER_METALS = [
+  "yellow",
+  "dark-red",
+  "green",
+  "light-blue",
+  "orange",
+  "purple",
+];
+const FINAL_LEVEL =
+  INITIAL_LEVELS + (LAST_COLOR_COUNT - 2) * LEVELS_PER_COLOR_SET + 1;
 const METAL_NAMES = {
-  cyan: "cyan",
-  gold: "gold",
-  magenta: "magenta",
-  blue: "blue",
+  yellow: "yellow",
+  "dark-red": "dark red",
   green: "green",
-  violet: "violet",
+  "light-blue": "light blue",
+  orange: "orange",
+  purple: "purple",
 };
 const OUTER_MATCH_TRIANGLES = [3, 2, 1, 0, 5, 4];
 
@@ -54,9 +66,40 @@ function shuffle(items) {
   return shuffledItems;
 }
 
-function createRound() {
-  const centerColors = shuffle(CENTER_METALS);
-  const matchCount = Math.floor(Math.random() * (TRIANGLE_COUNT - 1)) + 1;
+function getLevelRules(level) {
+  if (level <= INITIAL_LEVELS) {
+    return { colorCount: 2, isFinal: false, matchCount: level };
+  }
+
+  if (level >= FINAL_LEVEL) {
+    return {
+      colorCount: LAST_COLOR_COUNT,
+      isFinal: true,
+      matchCount: null,
+    };
+  }
+
+  const levelOffset = level - INITIAL_LEVELS - 1;
+
+  return {
+    colorCount: 3 + Math.floor(levelOffset / LEVELS_PER_COLOR_SET),
+    isFinal: false,
+    matchCount: 2 + (levelOffset % LEVELS_PER_COLOR_SET),
+  };
+}
+
+function createRound(level) {
+  const rules = getLevelRules(level);
+  const availableColors = shuffle(CENTER_METALS).slice(0, rules.colorCount);
+  const centerColors = shuffle(
+    Array.from(
+      { length: TRIANGLE_COUNT },
+      (_, index) => availableColors[index % availableColors.length],
+    ),
+  );
+  const matchCount = rules.isFinal
+    ? Math.floor(Math.random() * (TRIANGLE_COUNT - 1)) + 1
+    : rules.matchCount;
   const matchingCenterTriangles = new Set(
     shuffle(Array.from({ length: TRIANGLE_COUNT }, (_, index) => index)).slice(
       0,
@@ -67,7 +110,7 @@ function createRound() {
     const centerTriangleIndex = (outerTriangleIndex + 3) % TRIANGLE_COUNT;
     const targetColor = centerColors[centerTriangleIndex];
     const isMatch = matchingCenterTriangles.has(centerTriangleIndex);
-    const otherColors = CENTER_METALS.filter((color) => color !== targetColor);
+    const otherColors = availableColors.filter((color) => color !== targetColor);
 
     return {
       color: isMatch
@@ -107,6 +150,7 @@ export default function NewGameBoard() {
   const [phase, setPhase] = useState("ready");
   const [hearts, setHearts] = useState(5);
   const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
   const [round, setRound] = useState(1);
   const [mistakeMessage, setMistakeMessage] = useState("");
   const isPlaying = useRef(false);
@@ -178,7 +222,7 @@ export default function NewGameBoard() {
 
   function startRound() {
     if (phase !== "ready") return;
-    void runRound(createRound());
+    void runRound(createRound(level));
   }
 
   function chooseNeighbor(neighborIndex) {
@@ -193,13 +237,19 @@ export default function NewGameBoard() {
     setRoundData((current) => ({ ...current, neighbors: nextNeighbors }));
 
     if (chosenNeighbor.isMatch) {
-      setScore((current) => current + 10);
+      const levelRules = getLevelRules(level);
+      setScore((current) => current + (levelRules.isFinal ? 100 : level));
       const matchesFound = nextNeighbors.filter(
         (neighbor) => neighbor.isMatch && neighbor.selected,
       ).length;
 
       if (matchesFound === roundData.matchCount) {
-        setPhase("roundComplete");
+        if (levelRules.isFinal) {
+          setRound((current) => current + 1);
+          void runRound(createRound(level));
+        } else {
+          setPhase("roundComplete");
+        }
       }
       return;
     }
@@ -214,12 +264,12 @@ export default function NewGameBoard() {
     }
 
     setMistakeMessage(
-      `Incorrect match. You lost one heart. Round ${round} will restart with a new pattern.`,
+      `Incorrect match. You lost one heart. This round will restart with a new pattern.`,
     );
     setPhase("mistake");
     retryTimer.current = window.setTimeout(() => {
       retryTimer.current = null;
-      void runRound(createRound());
+      void runRound(createRound(level));
     }, MISTAKE_ALERT_DURATION);
   }
 
@@ -239,7 +289,12 @@ export default function NewGameBoard() {
 
   function startNextRound() {
     resetBoard();
-    setRound((current) => current + 1);
+    if (round === 5) {
+      setLevel((current) => current + 1);
+      setRound(1);
+    } else {
+      setRound((current) => current + 1);
+    }
     setPhase("ready");
   }
 
@@ -250,6 +305,7 @@ export default function NewGameBoard() {
     }
     isPlaying.current = false;
     resetBoard();
+    setLevel(1);
     setRound(1);
     setScore(0);
     setHearts(5);
@@ -257,14 +313,18 @@ export default function NewGameBoard() {
     setPhase("ready");
   }
 
+  const levelRules = getLevelRules(level);
+  const scorePerCorrect = levelRules.isFinal ? 100 : level;
   const phaseLabel = {
-    ready: "Press Start to memorize the center colors.",
+    ready: levelRules.isFinal
+      ? "Final level: match colors to earn 100 points each."
+      : `Level ${level}: find ${levelRules.matchCount} matches for ${scorePerCorrect} point${scorePerCorrect === 1 ? "" : "s"} each.`,
     revealing: "Watch the center triangles in order.",
     returning: "The center is resetting.",
     revealingNeighbors: "The neighboring triangles are revealing together.",
     matching: "Select only the neighbors that match.",
     mistake: "Mistake! Replaying this round shortly.",
-    roundComplete: "Round complete! You found every match.",
+    roundComplete: `Level ${level}, round ${round} complete!`,
     gameOver: "No hearts remaining. Game over.",
   }[phase];
 
@@ -272,13 +332,31 @@ export default function NewGameBoard() {
     <div className="flex w-full flex-col items-center gap-5">
       <div
         aria-label="Game status"
-        className="grid w-full max-w-[44rem] grid-cols-3 gap-3"
+        className="grid w-full max-w-[44rem] grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       >
         <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-            Round
+            Level
           </p>
-          <p className="text-lg font-black text-white">{round}</p>
+          <p className="text-lg font-black text-white">
+            {levelRules.isFinal ? `Final ${FINAL_LEVEL}` : level}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            {levelRules.isFinal ? "Board" : "Round"}
+          </p>
+          <p className="text-lg font-black text-white">
+            {levelRules.isFinal ? round : `${round}/5`}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            Matches
+          </p>
+          <p className="text-lg font-black text-white">
+            {levelRules.isFinal ? "?" : levelRules.matchCount}
+          </p>
         </div>
         <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -316,7 +394,8 @@ export default function NewGameBoard() {
         <desc id="hex-board-description">
           Memorize the six center colors as they move in a wave. Then select
           matching colors from the six surrounding triangles that touch the
-          center. Correct matches earn ten points; incorrect picks lose a heart.
+          center. Correct matches earn points based on the level, and incorrect
+          picks lose a heart.
         </desc>
         <defs>
           <linearGradient id="silver-metal" x1="0%" x2="100%" y1="0%" y2="100%">
@@ -327,33 +406,19 @@ export default function NewGameBoard() {
             <stop offset="76%" stopColor="#cbd1d9" />
             <stop offset="100%" stopColor="#9da7b2" />
           </linearGradient>
-          <linearGradient id="metal-cyan" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#0e7490" />
-            <stop offset="24%" stopColor="#67e8f9" />
-            <stop offset="42%" stopColor="#ecfeff" />
-            <stop offset="62%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#164e63" />
+          <linearGradient id="metal-yellow" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#854d0e" />
+            <stop offset="24%" stopColor="#facc15" />
+            <stop offset="42%" stopColor="#fef9c3" />
+            <stop offset="62%" stopColor="#eab308" />
+            <stop offset="100%" stopColor="#713f12" />
           </linearGradient>
-          <linearGradient id="metal-gold" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#92400e" />
-            <stop offset="24%" stopColor="#fbbf24" />
-            <stop offset="42%" stopColor="#fffbeb" />
-            <stop offset="62%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#78350f" />
-          </linearGradient>
-          <linearGradient id="metal-magenta" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#86198f" />
-            <stop offset="24%" stopColor="#e879f9" />
-            <stop offset="42%" stopColor="#fdf4ff" />
-            <stop offset="62%" stopColor="#c026d3" />
-            <stop offset="100%" stopColor="#701a75" />
-          </linearGradient>
-          <linearGradient id="metal-blue" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#1e40af" />
-            <stop offset="24%" stopColor="#60a5fa" />
-            <stop offset="42%" stopColor="#eff6ff" />
-            <stop offset="62%" stopColor="#2563eb" />
-            <stop offset="100%" stopColor="#1e3a8a" />
+          <linearGradient id="metal-dark-red" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#450a0a" />
+            <stop offset="24%" stopColor="#b91c1c" />
+            <stop offset="42%" stopColor="#fecaca" />
+            <stop offset="62%" stopColor="#dc2626" />
+            <stop offset="100%" stopColor="#7f1d1d" />
           </linearGradient>
           <linearGradient id="metal-green" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stopColor="#065f46" />
@@ -362,12 +427,26 @@ export default function NewGameBoard() {
             <stop offset="62%" stopColor="#10b981" />
             <stop offset="100%" stopColor="#064e3b" />
           </linearGradient>
-          <linearGradient id="metal-violet" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#5b21b6" />
-            <stop offset="24%" stopColor="#a78bfa" />
-            <stop offset="42%" stopColor="#f5f3ff" />
-            <stop offset="62%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#4c1d95" />
+          <linearGradient id="metal-light-blue" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#075985" />
+            <stop offset="24%" stopColor="#7dd3fc" />
+            <stop offset="42%" stopColor="#e0f2fe" />
+            <stop offset="62%" stopColor="#38bdf8" />
+            <stop offset="100%" stopColor="#0c4a6e" />
+          </linearGradient>
+          <linearGradient id="metal-orange" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#7c2d12" />
+            <stop offset="24%" stopColor="#fb923c" />
+            <stop offset="42%" stopColor="#ffedd5" />
+            <stop offset="62%" stopColor="#f97316" />
+            <stop offset="100%" stopColor="#9a3412" />
+          </linearGradient>
+          <linearGradient id="metal-purple" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#3b0764" />
+            <stop offset="24%" stopColor="#c084fc" />
+            <stop offset="42%" stopColor="#f3e8ff" />
+            <stop offset="62%" stopColor="#9333ea" />
+            <stop offset="100%" stopColor="#581c87" />
           </linearGradient>
         </defs>
         {HEX_CENTERS.map(({ x, y }, hexIndex) => {
@@ -406,7 +485,7 @@ export default function NewGameBoard() {
                 );
                 const color = isCenterHex
                   ? roundData.centerColors[triangleIndex]
-                  : neighbor?.color ?? "cyan";
+                  : neighbor?.color ?? "yellow";
                 const facetColor = isCorrectHex
                   ? "#34d399"
                   : isWrongHex
@@ -426,7 +505,7 @@ export default function NewGameBoard() {
                 const neighborLabel = isNeighborTarget
                   ? `Neighbor ${neighborIndex + 1}, ${
                       neighborsRevealed
-                        ? `${METAL_NAMES[neighbor?.color ?? "cyan"]} metallic`
+                        ? `${METAL_NAMES[neighbor?.color ?? "yellow"]} metallic`
                         : "color hidden"
                     }${
                       neighbor?.selected
@@ -543,7 +622,7 @@ export default function NewGameBoard() {
             onClick={startNextRound}
             type="button"
           >
-            Next round
+            {round === 5 ? "Start next level" : "Next round"}
           </button>
         )}
         {phase === "gameOver" && (
