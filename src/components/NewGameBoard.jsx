@@ -15,6 +15,9 @@ const HEX_CENTERS = [
 const TRIANGLE_COUNT = 6;
 const TURN_HALF_DURATION = 300;
 const MISTAKE_ALERT_DURATION = 1500;
+const INITIAL_LEVELS = 5;
+const LEVELS_PER_COLOR_SET = TRIANGLE_COUNT - 2;
+const LAST_COLOR_COUNT = 6;
 const CENTER_METALS = [
   "yellow",
   "dark-red",
@@ -23,6 +26,8 @@ const CENTER_METALS = [
   "orange",
   "purple",
 ];
+const FINAL_LEVEL =
+  INITIAL_LEVELS + (LAST_COLOR_COUNT - 2) * LEVELS_PER_COLOR_SET + 1;
 const METAL_NAMES = {
   yellow: "yellow",
   "dark-red": "dark red",
@@ -61,9 +66,40 @@ function shuffle(items) {
   return shuffledItems;
 }
 
-function createRound() {
-  const centerColors = shuffle(CENTER_METALS);
-  const matchCount = Math.floor(Math.random() * (TRIANGLE_COUNT - 1)) + 1;
+function getLevelRules(level) {
+  if (level <= INITIAL_LEVELS) {
+    return { colorCount: 2, isFinal: false, matchCount: level };
+  }
+
+  if (level >= FINAL_LEVEL) {
+    return {
+      colorCount: LAST_COLOR_COUNT,
+      isFinal: true,
+      matchCount: null,
+    };
+  }
+
+  const levelOffset = level - INITIAL_LEVELS - 1;
+
+  return {
+    colorCount: 3 + Math.floor(levelOffset / LEVELS_PER_COLOR_SET),
+    isFinal: false,
+    matchCount: 2 + (levelOffset % LEVELS_PER_COLOR_SET),
+  };
+}
+
+function createRound(level) {
+  const rules = getLevelRules(level);
+  const availableColors = shuffle(CENTER_METALS).slice(0, rules.colorCount);
+  const centerColors = shuffle(
+    Array.from(
+      { length: TRIANGLE_COUNT },
+      (_, index) => availableColors[index % availableColors.length],
+    ),
+  );
+  const matchCount = rules.isFinal
+    ? Math.floor(Math.random() * (TRIANGLE_COUNT - 1)) + 1
+    : rules.matchCount;
   const matchingCenterTriangles = new Set(
     shuffle(Array.from({ length: TRIANGLE_COUNT }, (_, index) => index)).slice(
       0,
@@ -74,7 +110,7 @@ function createRound() {
     const centerTriangleIndex = (outerTriangleIndex + 3) % TRIANGLE_COUNT;
     const targetColor = centerColors[centerTriangleIndex];
     const isMatch = matchingCenterTriangles.has(centerTriangleIndex);
-    const otherColors = CENTER_METALS.filter((color) => color !== targetColor);
+    const otherColors = availableColors.filter((color) => color !== targetColor);
 
     return {
       color: isMatch
@@ -114,6 +150,7 @@ export default function NewGameBoard() {
   const [phase, setPhase] = useState("ready");
   const [hearts, setHearts] = useState(5);
   const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
   const [round, setRound] = useState(1);
   const [mistakeMessage, setMistakeMessage] = useState("");
   const isPlaying = useRef(false);
@@ -185,7 +222,7 @@ export default function NewGameBoard() {
 
   function startRound() {
     if (phase !== "ready") return;
-    void runRound(createRound());
+    void runRound(createRound(level));
   }
 
   function chooseNeighbor(neighborIndex) {
@@ -200,13 +237,19 @@ export default function NewGameBoard() {
     setRoundData((current) => ({ ...current, neighbors: nextNeighbors }));
 
     if (chosenNeighbor.isMatch) {
-      setScore((current) => current + 10);
+      const levelRules = getLevelRules(level);
+      setScore((current) => current + (levelRules.isFinal ? 100 : level));
       const matchesFound = nextNeighbors.filter(
         (neighbor) => neighbor.isMatch && neighbor.selected,
       ).length;
 
       if (matchesFound === roundData.matchCount) {
-        setPhase("roundComplete");
+        if (levelRules.isFinal) {
+          setRound((current) => current + 1);
+          void runRound(createRound(level));
+        } else {
+          setPhase("roundComplete");
+        }
       }
       return;
     }
@@ -221,12 +264,12 @@ export default function NewGameBoard() {
     }
 
     setMistakeMessage(
-      `Incorrect match. You lost one heart. Round ${round} will restart with a new pattern.`,
+      `Incorrect match. You lost one heart. This round will restart with a new pattern.`,
     );
     setPhase("mistake");
     retryTimer.current = window.setTimeout(() => {
       retryTimer.current = null;
-      void runRound(createRound());
+      void runRound(createRound(level));
     }, MISTAKE_ALERT_DURATION);
   }
 
@@ -246,7 +289,12 @@ export default function NewGameBoard() {
 
   function startNextRound() {
     resetBoard();
-    setRound((current) => current + 1);
+    if (round === 5) {
+      setLevel((current) => current + 1);
+      setRound(1);
+    } else {
+      setRound((current) => current + 1);
+    }
     setPhase("ready");
   }
 
@@ -257,6 +305,7 @@ export default function NewGameBoard() {
     }
     isPlaying.current = false;
     resetBoard();
+    setLevel(1);
     setRound(1);
     setScore(0);
     setHearts(5);
@@ -264,14 +313,18 @@ export default function NewGameBoard() {
     setPhase("ready");
   }
 
+  const levelRules = getLevelRules(level);
+  const scorePerCorrect = levelRules.isFinal ? 100 : level;
   const phaseLabel = {
-    ready: "Press Start to memorize the center colors.",
+    ready: levelRules.isFinal
+      ? "Final level: match colors to earn 100 points each."
+      : `Level ${level}: find ${levelRules.matchCount} matches for ${scorePerCorrect} point${scorePerCorrect === 1 ? "" : "s"} each.`,
     revealing: "Watch the center triangles in order.",
     returning: "The center is resetting.",
     revealingNeighbors: "The neighboring triangles are revealing together.",
     matching: "Select only the neighbors that match.",
     mistake: "Mistake! Replaying this round shortly.",
-    roundComplete: "Round complete! You found every match.",
+    roundComplete: `Level ${level}, round ${round} complete!`,
     gameOver: "No hearts remaining. Game over.",
   }[phase];
 
@@ -279,13 +332,31 @@ export default function NewGameBoard() {
     <div className="flex w-full flex-col items-center gap-5">
       <div
         aria-label="Game status"
-        className="grid w-full max-w-[44rem] grid-cols-3 gap-3"
+        className="grid w-full max-w-[44rem] grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       >
         <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-            Round
+            Level
           </p>
-          <p className="text-lg font-black text-white">{round}</p>
+          <p className="text-lg font-black text-white">
+            {levelRules.isFinal ? `Final ${FINAL_LEVEL}` : level}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            {levelRules.isFinal ? "Board" : "Round"}
+          </p>
+          <p className="text-lg font-black text-white">
+            {levelRules.isFinal ? round : `${round}/5`}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            Matches
+          </p>
+          <p className="text-lg font-black text-white">
+            {levelRules.isFinal ? "?" : levelRules.matchCount}
+          </p>
         </div>
         <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -323,7 +394,8 @@ export default function NewGameBoard() {
         <desc id="hex-board-description">
           Memorize the six center colors as they move in a wave. Then select
           matching colors from the six surrounding triangles that touch the
-          center. Correct matches earn ten points; incorrect picks lose a heart.
+          center. Correct matches earn points based on the level, and incorrect
+          picks lose a heart.
         </desc>
         <defs>
           <linearGradient id="silver-metal" x1="0%" x2="100%" y1="0%" y2="100%">
@@ -550,7 +622,7 @@ export default function NewGameBoard() {
             onClick={startNextRound}
             type="button"
           >
-            Next round
+            {round === 5 ? "Start next level" : "Next round"}
           </button>
         )}
         {phase === "gameOver" && (

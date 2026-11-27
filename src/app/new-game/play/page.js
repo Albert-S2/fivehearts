@@ -44,9 +44,9 @@ export default function NewGamePlayPage() {
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
               Memorize the center-color wave, then select matching colors from
-              the six neighboring triangles. Correct matches earn 10 points;
-              correct hexagons turn green, and mistakes cost a heart and turn
-              the hexagon red.
+              the six neighboring triangles. Complete five rounds to advance
+              each level. Correct matches earn points equal to the level, while
+              mistakes cost a heart. Final-level matches are worth 100 points.
             </p>
           </div>
 
