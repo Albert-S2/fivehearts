@@ -15,14 +15,21 @@ const HEX_CENTERS = [
 const TRIANGLE_COUNT = 6;
 const TURN_HALF_DURATION = 300;
 const MISTAKE_ALERT_DURATION = 1500;
-const CENTER_METALS = ["cyan", "gold", "magenta", "blue", "green", "violet"];
+const CENTER_METALS = [
+  "yellow",
+  "dark-red",
+  "green",
+  "light-blue",
+  "orange",
+  "purple",
+];
 const METAL_NAMES = {
-  cyan: "cyan",
-  gold: "gold",
-  magenta: "magenta",
-  blue: "blue",
+  yellow: "yellow",
+  "dark-red": "dark red",
   green: "green",
-  violet: "violet",
+  "light-blue": "light blue",
+  orange: "orange",
+  purple: "purple",
 };
 const OUTER_MATCH_TRIANGLES = [3, 2, 1, 0, 5, 4];
 
@@ -327,33 +334,19 @@ export default function NewGameBoard() {
             <stop offset="76%" stopColor="#cbd1d9" />
             <stop offset="100%" stopColor="#9da7b2" />
           </linearGradient>
-          <linearGradient id="metal-cyan" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#0e7490" />
-            <stop offset="24%" stopColor="#67e8f9" />
-            <stop offset="42%" stopColor="#ecfeff" />
-            <stop offset="62%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#164e63" />
+          <linearGradient id="metal-yellow" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#854d0e" />
+            <stop offset="24%" stopColor="#facc15" />
+            <stop offset="42%" stopColor="#fef9c3" />
+            <stop offset="62%" stopColor="#eab308" />
+            <stop offset="100%" stopColor="#713f12" />
           </linearGradient>
-          <linearGradient id="metal-gold" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#92400e" />
-            <stop offset="24%" stopColor="#fbbf24" />
-            <stop offset="42%" stopColor="#fffbeb" />
-            <stop offset="62%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#78350f" />
-          </linearGradient>
-          <linearGradient id="metal-magenta" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#86198f" />
-            <stop offset="24%" stopColor="#e879f9" />
-            <stop offset="42%" stopColor="#fdf4ff" />
-            <stop offset="62%" stopColor="#c026d3" />
-            <stop offset="100%" stopColor="#701a75" />
-          </linearGradient>
-          <linearGradient id="metal-blue" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#1e40af" />
-            <stop offset="24%" stopColor="#60a5fa" />
-            <stop offset="42%" stopColor="#eff6ff" />
-            <stop offset="62%" stopColor="#2563eb" />
-            <stop offset="100%" stopColor="#1e3a8a" />
+          <linearGradient id="metal-dark-red" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#450a0a" />
+            <stop offset="24%" stopColor="#b91c1c" />
+            <stop offset="42%" stopColor="#fecaca" />
+            <stop offset="62%" stopColor="#dc2626" />
+            <stop offset="100%" stopColor="#7f1d1d" />
           </linearGradient>
           <linearGradient id="metal-green" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stopColor="#065f46" />
@@ -362,12 +355,26 @@ export default function NewGameBoard() {
             <stop offset="62%" stopColor="#10b981" />
             <stop offset="100%" stopColor="#064e3b" />
           </linearGradient>
-          <linearGradient id="metal-violet" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#5b21b6" />
-            <stop offset="24%" stopColor="#a78bfa" />
-            <stop offset="42%" stopColor="#f5f3ff" />
-            <stop offset="62%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#4c1d95" />
+          <linearGradient id="metal-light-blue" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#075985" />
+            <stop offset="24%" stopColor="#7dd3fc" />
+            <stop offset="42%" stopColor="#e0f2fe" />
+            <stop offset="62%" stopColor="#38bdf8" />
+            <stop offset="100%" stopColor="#0c4a6e" />
+          </linearGradient>
+          <linearGradient id="metal-orange" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#7c2d12" />
+            <stop offset="24%" stopColor="#fb923c" />
+            <stop offset="42%" stopColor="#ffedd5" />
+            <stop offset="62%" stopColor="#f97316" />
+            <stop offset="100%" stopColor="#9a3412" />
+          </linearGradient>
+          <linearGradient id="metal-purple" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#3b0764" />
+            <stop offset="24%" stopColor="#c084fc" />
+            <stop offset="42%" stopColor="#f3e8ff" />
+            <stop offset="62%" stopColor="#9333ea" />
+            <stop offset="100%" stopColor="#581c87" />
           </linearGradient>
         </defs>
         {HEX_CENTERS.map(({ x, y }, hexIndex) => {
@@ -406,7 +413,7 @@ export default function NewGameBoard() {
                 );
                 const color = isCenterHex
                   ? roundData.centerColors[triangleIndex]
-                  : neighbor?.color ?? "cyan";
+                  : neighbor?.color ?? "yellow";
                 const facetColor = isCorrectHex
                   ? "#34d399"
                   : isWrongHex
@@ -426,7 +433,7 @@ export default function NewGameBoard() {
                 const neighborLabel = isNeighborTarget
                   ? `Neighbor ${neighborIndex + 1}, ${
                       neighborsRevealed
-                        ? `${METAL_NAMES[neighbor?.color ?? "cyan"]} metallic`
+                        ? `${METAL_NAMES[neighbor?.color ?? "yellow"]} metallic`
                         : "color hidden"
                     }${
                       neighbor?.selected
